@@ -1,15 +1,15 @@
-@ S_Handler.S: Customized SWI Handler
+@ SWI_Handler.S: Customized SWI Handler
 @
 @ Author: Alvin Zheng <dongxuez@andrew.cmu.edu>
 @         Minghao Wang <minghaow@andrew.cmu.edu>
 @         Yining Yang <yiningy@andrw.cmu.edu>
 @ Date:   2013/10/22  12:00pm
 
-	.file	"S_Handler.S"
+	.file	"SWI_Handler.S"
 	.text
 
-	.global	S_Handler
-S_Handler:
+	.global	SWI_Handler
+SWI_Handler:
     SUB     sp, sp, #4
     STMFD   sp!, {r0-r12, lr}
     MRS     r2, spsr

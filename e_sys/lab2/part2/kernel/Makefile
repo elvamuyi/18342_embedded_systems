@@ -18,7 +18,7 @@ default: kernel.bin
 kernel.bin: kernel
 	$(OBJCOPY) -O binary $< $@
 
-kernel: start.o S_Handler.o $(objects)
+kernel: start.o SWI_Handler.o read.o write.o $(objects)
 	$(CC) $(LDFLAGS) -o $@ $^ $(STUBS)
 
 %.o: %.c
@@ -28,7 +28,7 @@ kernel: start.o S_Handler.o $(objects)
 	$(CC) -c $(ASFLAGS) -o $@ $<
 
 clean:
-	rm -f kernel start.o S_Handler.o $(objects)
+	rm -f kernel start.o SWI_Handler.o read.o write.o $(objects)
 
 clobber: clean
 	rm -f kernel.bin
