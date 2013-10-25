@@ -7,20 +7,26 @@
  * Date:   2013/10/22  11:30am
  */
 
+#include <kernel.h>
 #include <exports.h>
 #include <bits/types.h>
-#include <bits/errno.h>
-#include <bits/fileno.h>
 
-#define SWI_VECTOR 0x08
-#define USER_APP_ADDR 0xa2000000
+// U-Boot global data structure
+unsigned UBoot_R8;
+// SP of kernel before jumping to UserApp
+unsigned kStackPtr;
 
-// Customized SWI Handler in assembly
-extern int SWI_Handler();
-// Customized SWI Handler in C
-void C_SWI_Handler(unsigned, unsigned *);
 // Install the customized SWI Handler
-unsigned * Install_SWI_Handler(unsigned []);
+unsigned* Install_SWI_Handler(unsigned []);
+// Customized SWI Handler (C half)
+int C_SWI_Handler(unsigned, unsigned *);
+// Customized SWI Handler (Assembly half)
+extern int SWI_Handler();
+
+// Call user applications (C half)
+unsigned* C_Call_UserApp(int, char*[]);
+// Call user applications (Assembly half)
+extern int Call_UserApp(int, unsigned *);
 
 // Syscalls
 extern void exit(int);
@@ -29,31 +35,31 @@ extern ssize_t write(int, const void *, size_t);
 
 int main(int argc, char *argv[])
 {
-    void (*User_App)() = (void *) USER_APP_ADDR;
-
     // Install our new SWI Handler. Save the old address
-    unsigned oldswi_ins[2];
-    unsigned *oldswi = Install_SWI_Handler(oldswi_ins);
-    
+    unsigned oldSwi_ins[2];
+    unsigned *oldSwi = Install_SWI_Handler(oldSwi_ins);
+
     // Call the user application
-    (*User_App)();
+    unsigned* uStack = C_Call_UserApp(argc, argv);
+    int UserApp_Return = Call_UserApp(argc, uStack);
 
     // Restore the SWI handler
-    *oldswi = oldswi_ins[0];
-    *(oldswi + 1) = oldswi_ins[1];
+    *oldSwi = oldSwi_ins[0];
+    *(oldSwi + 1) = oldSwi_ins[1];
 
-    /*
-    void *buf = malloc(10);
-    int rcount = read(STDIN_FILENO, buf, 10);
-    printf("Read: %d\nBuffer: %s\n", rcount, buf);
-
-    int wcount = write(STDOUT_FILENO, buf, 10);
-    printf("Write: %d\nBuffer: %s\n", wcount, buf);
-    */
-    return 0;
+    return UserApp_Return;
 }
 
-unsigned * Install_SWI_Handler(unsigned oldswi_ins[])
+/*
+ * unsigned* Install_SWI_Handler(unsigned[])
+ *  - Install the our customized SWI Handler
+ *  - Replace the handler's first 2 instructions and save the original ones
+ * Argumnet:
+ *  - unsigned odlSwi_ins[]: Original SWI handler's instructions
+ * Return:
+ *  - unsigned* oldSwi: Original SWI Handler address
+ */
+unsigned* Install_SWI_Handler(unsigned oldSwi_ins[])
 {
     int (*SWI_Handler_Ptr)() = &SWI_Handler;
 
@@ -71,38 +77,70 @@ unsigned * Install_SWI_Handler(unsigned oldswi_ins[])
     // Unrecognized instuction
     else {
         printf("Unrecognized SWI vector\n");
-        return 0x0;
-        //exit(0xbadc0de);
+        exit(0xbadc0de);
     }
     
     // Extract the addr of SWI Handler
-    unsigned *oldswi = (unsigned *) *jmp_table;
+    unsigned *oldSwi = (unsigned *) *jmp_table;
     // Store the old SWI Handler's first 2 instructions
-    oldswi_ins[0] = (unsigned) *oldswi;
-    oldswi_ins[1] = (unsigned) *(oldswi + 1);
+    oldSwi_ins[0] = (unsigned) *oldSwi;
+    oldSwi_ins[1] = (unsigned) *(oldSwi + 1);
 
     // Replace the old handler's first 2 instructions
-    *oldswi = 0xe51ff004;  // LDR pc, [pc, #-4]
-    *(oldswi + 1) = (unsigned) SWI_Handler_Ptr;
+    *oldSwi = 0xe51ff004;  // LDR pc, [pc, #-4]
+    *(oldSwi + 1) = (unsigned) SWI_Handler_Ptr;
 
-    return oldswi;
+    return oldSwi;
 }
 
-void C_SWI_Handler(unsigned swi_num, unsigned *regs) {
+/*
+ * int C_SWI_Handler(unsigned, unsigned *)
+ *  - SWI Handler (C half), called by SWI Handler (Assembly half)
+ *  - Call the corresponding syscall
+ * Argumnet:
+ *  - unsigned swi_num: SWI number
+ *  - unsigned *regs: Register list pointer
+ * Return:
+ *  - Syscall's return value (except exit that never returns)
+ */
+int C_SWI_Handler(unsigned swi_num, unsigned *regs)
+{
     switch (swi_num) {
-        /*
         case 0x900001:
             exit((int)*regs);
-            break;
-        */
         case 0x900003:
-            read((int)*regs, (void *)*(regs + 1), (size_t)*(regs + 2));
-            break;
+            return read((int)*regs, (void *)*(regs + 1), (size_t)*(regs + 2));
         case 0x900004:
-            write((int)*regs, (void *)*(regs + 1), (size_t)*(regs + 2));
-            break;
+            return write((int)*regs, (void *)*(regs + 1), (size_t)*(regs + 2));
         default:
             printf("Invalid syscall\n");
-            //exit(0xbadc0de);
+            exit(0xbadc0de);
     }
+    return 1;
+}
+
+/*
+ * unsigned* C_Call_UserApp(int, char *[])
+ *  - Preparation for calling UserApp (C half)
+ *  - Push the argc and argv into user mode stack
+ * Argumnet:
+ *  - int uArgc: Kernel input argc
+ *  - char *uArgv[]: Kernel input argv
+ * Return:
+ *  - unsigned* uStack: User mode stack pointer
+ */
+unsigned* C_Call_UserApp(int uArgc, char *uArgv[])
+{
+    // Push argc and argv on the user mode stack
+    int count;
+    unsigned *uStack = (unsigned *) (USER_STACK_ADDR - 4);
+    // [sp+4(argc)+4] = NULL
+    *uStack-- = 0x0;
+    // [sp+4(argc)] = argv[argc-1]
+    for (count = uArgc; count > 0; count--)
+        *uStack-- = (unsigned) (uArgv[count - 1]);
+    // [sp] = argc
+    *uStack = (unsigned) uArgc;
+    // Transfer to User mode, jump to UserApp from assembly
+    return uStack;
 }

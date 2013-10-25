@@ -1,6 +1,6 @@
-CC      = gcc
-OBJCOPY = objcopy
-CFLAGS  = -O2 -ffreestanding -Wall -Werror -nostdinc -I ../../part1/libc/include
+CC      = arm-linux-gcc
+OBJCOPY = arm-linux-objcopy
+CFLAGS  = -ggdb -O2 -ffreestanding -Wall -Werror -nostdinc -I ../../part1/libc/include
 LDFLAGS = -nostdlib -Wl,-Ttext,$(LOAD_ADDR)
 
 LOAD_ADDR = 0xa2000000

@@ -12,7 +12,7 @@
 
 	.global	_start
 _start:
-	ldr	r0, [sp], #4
-	mov	r1, sp
+	ldr	r0, [sp]
+	add	r1, sp, #4
 	bl	main
 	swi	EXIT_SWI

@@ -20,18 +20,28 @@ char caesar(char c) {
     return c;
 }
 
-int main(void) {
+int main(int argc, char *argv[]) {
     int i, count;
     char buffer[BLOCK_SIZE];
+    // Print all the argv on the screen
+    for (i = 1; i < argc; i++) {
+        write(STDOUT_FILENO, argv[i], BLOCK_SIZE);
+        write(STDOUT_FILENO, "\n", 1);
+    }
+    // Rot13 routine
     while (1) {
         if (read(STDIN_FILENO, buffer, BLOCK_SIZE) < 0)
             exit(1);
         // Exit if no bytes input
-        if (buffer[0] == '\n' || buffer[0] == '\0')
+        char tmp = buffer[0];
+        if (tmp == '\n' || tmp == '\r' || tmp == '\0')
             exit(0);
         for (count = 0; count < BLOCK_SIZE; count++) {
-            char tmp = buffer[count];
-            if (tmp == '\n' || tmp == '\0') break;
+            tmp = buffer[count];
+            if (tmp == '\r' || tmp == '\n' || tmp == '\0') {
+                buffer[count] = '\n';
+                break;
+            }
             buffer[count] = caesar(tmp);
         }
         if (write(STDOUT_FILENO, buffer, count + 1) < 0)

@@ -1,7 +1,7 @@
 CC      = gcc
 OBJCOPY = objcopy
-ASFLAGS = -nostdinc -I ../libc/include
-LDFLAGS = -nostdlib -Wl,-Ttext,$(LOAD_ADDR) 
+ASFLAGS = -nostdinc -I include
+LDFLAGS = -nostdlib -Wl,-e,-N,-Ttext,$(LOAD_ADDR) 
 
 LOAD_ADDR = 0xa2000000
 

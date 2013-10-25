@@ -7,13 +7,11 @@
  * Date:   2013/10/23  11:30am
  */
 
+#include <kernel.h>
 #include <exports.h>
 #include <bits/errno.h>
 #include <bits/types.h>
 #include <bits/fileno.h>
-
-#define SDRAM_LOW 0xa0000000
-#define SDRAM_HIGH 0xa3ffffff
 
 ssize_t read(int fd, void *buf, size_t count)
 {
@@ -22,7 +20,14 @@ ssize_t read(int fd, void *buf, size_t count)
         return -EBADF;
     // Verify buffer address 
     unsigned buf_val = (unsigned) buf;
-    if (buf_val < SDRAM_LOW || buf_val + count > SDRAM_HIGH)
+    if (buf_val >= SDRAM_LOW) {
+        if (buf_val + count >= U_Boot)
+            return -EFAULT;
+    }
+    else if (buf_val >= FlashROM_LOW) {
+        if (buf_val + count > FlashROM_HIGH)
+            return -EFAULT;
+    } else
         return -EFAULT;
 
     // Read routine
