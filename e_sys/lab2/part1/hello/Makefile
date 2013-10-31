@@ -1,5 +1,5 @@
-CC      = gcc
-OBJCOPY = objcopy
+CC      = arm-linux-gcc
+OBJCOPY = arm-linux-objcopy
 ASFLAGS = -nostdinc -I include
 LDFLAGS = -nostdlib -Wl,-e,-N,-Ttext,$(LOAD_ADDR) 
 

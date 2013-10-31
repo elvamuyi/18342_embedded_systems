@@ -1,4 +1,4 @@
-CC      = gcc
+CC      = arm-linux-gcc
 CFLAGS  = -O2 -ffixed-r8 -ffreestanding -Wall -Werror -nostdinc -I include
 
 default: stubs.o
