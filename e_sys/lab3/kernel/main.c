@@ -129,7 +129,8 @@ int C_SWI_Handler(unsigned swi_num, unsigned *regs)
         case TIME_SWI:
             return time();
         case SLEEP_SWI:
-            sleep((int)*regs);
+            sleep((long)*regs);
+            return 1;
         default:
             printf("Invalid syscall\n");
             exit(0xbadc0de);

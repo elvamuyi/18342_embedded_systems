@@ -16,24 +16,16 @@
 
 int main(int argc, char** argv)
 {
-	char buf[BLOCK_SIZE];
-    int r_val = 0;
-    int w_val = 0;
-    while((r_val!=-1) && (w_val!=-1))
-    {
-        r_val = read(STDIN_FILENO, buf, BLOCK_SIZE);
-            
-        int i;
-        for(i = 0; i < BLOCK_SIZE; i++)
-            if(buf[i] == '\n') break;
-        
-        w_val = write(STDOUT_FILENO, buf, i+1);
+    int i;
+    for (i = 1; i < argc; i++) {
+        write(STDOUT_FILENO, argv[i], BLOCK_SIZE);
+        write(STDOUT_FILENO, "\n", 1);
     }
     
-    printf("\nCurrent time is %ld\n", time());
+    printf("Current time is %ld\n", time());
     sleep(SLEEP_TIME);
-    printf("After sleeping for %d:", SLEEP_TIME);
-    printf("\nCurrent time is %ld\n", time());
+    printf("After sleeping for %d:\n", SLEEP_TIME);
+    printf("Current time is %ld\n", time());
     
 	return 0;
 }
