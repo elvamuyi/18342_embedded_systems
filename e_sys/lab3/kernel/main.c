@@ -12,6 +12,7 @@
 #include <exports.h>
 #include <types.h>
 
+#include <bits/swi.h>
 #include <arm/psr.h>
 #include <arm/exception.h>
 #include <arm/interrupt.h>
@@ -40,6 +41,8 @@ extern int Call_UserApp(int, unsigned *);
 extern void exit(int);
 extern ssize_t read(int, void *, size_t);
 extern ssize_t write(int, const void *, size_t);
+extern unsigned long time();
+extern void sleep(unsigned long);
 
 int kmain(int argc, char** argv, uint32_t table)
 {
@@ -117,12 +120,16 @@ unsigned* Install_SWI_Handler(unsigned oldSwi_ins[])
 int C_SWI_Handler(unsigned swi_num, unsigned *regs)
 {
     switch (swi_num) {
-        case 0x900001:
+        case EXIT_SWI:
             exit((int)*regs);
-        case 0x900003:
+        case READ_SWI:
             return read((int)*regs, (void *)*(regs + 1), (size_t)*(regs + 2));
-        case 0x900004:
+        case WRITE_SWI:
             return write((int)*regs, (void *)*(regs + 1), (size_t)*(regs + 2));
+        case TIME_SWI:
+            return time();
+        case SLEEP_SWI:
+            sleep((int)*regs);
         default:
             printf("Invalid syscall\n");
             exit(0xbadc0de);
