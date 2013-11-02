@@ -64,7 +64,7 @@ unsigned* Install_SWI_Handler(unsigned oldSwi_ins[])
     int (*SWI_Handler_Ptr)() = &SWI_Handler;
 
     // Identify the SWI vector
-    unsigned *jmp_table;
+    unsigned *jmp_table = 0x0;
     unsigned *vector = (unsigned *) SWI_VECTOR;
     unsigned offset = ((unsigned)(*vector)) & 0x00000FFF;
     unsigned ldr_pc = ((unsigned)(*vector)) & 0xFFFFF000;

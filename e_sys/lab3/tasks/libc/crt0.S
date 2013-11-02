@@ -7,8 +7,12 @@
  */
 
 #include <asm.h>
+#include <bits/swi.h>
 
 	.file "crt0.S"
 
 FUNC(_start)
-	@ needs code.  Put your names at the top.
+    ldr	r0, [sp]
+	add	r1, sp, #4
+	bl	main
+	swi	EXIT_SWI
