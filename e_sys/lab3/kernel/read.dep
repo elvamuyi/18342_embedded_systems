@@ -1,0 +1,23 @@
+/home/alvin/Documents/342L3/lab3/kernel/read.o:  \
+ /home/alvin/Documents/342L3/lab3/kernel/read.c \
+  /home/alvin/Documents/342L3/lab3/kernel/include/types.h \
+  /home/alvin/Documents/342L3/lab3/kernel/include/kernel.h \
+  /home/alvin/Documents/342L3/lab3/uboot/include/exports.h \
+  /home/alvin/Documents/342L3/lab3/kernel/include/stdarg.h \
+  /home/alvin/Documents/342L3/lab3/uboot/include/_exports.h \
+  /home/alvin/Documents/342L3/lab3/kernel/include/bits/errno.h \
+  /home/alvin/Documents/342L3/lab3/kernel/include/bits/fileno.h
+
+/home/alvin/Documents/342L3/lab3/kernel/include/types.h:
+
+/home/alvin/Documents/342L3/lab3/kernel/include/kernel.h:
+
+/home/alvin/Documents/342L3/lab3/uboot/include/exports.h:
+
+/home/alvin/Documents/342L3/lab3/kernel/include/stdarg.h:
+
+/home/alvin/Documents/342L3/lab3/uboot/include/_exports.h:
+
+/home/alvin/Documents/342L3/lab3/kernel/include/bits/errno.h:
+
+/home/alvin/Documents/342L3/lab3/kernel/include/bits/fileno.h:

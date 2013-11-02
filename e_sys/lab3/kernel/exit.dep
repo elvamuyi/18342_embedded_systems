@@ -1,0 +1,8 @@
+/home/alvin/Documents/342L3/lab3/kernel/exit.o:  \
+ /home/alvin/Documents/342L3/lab3/kernel/exit.S \
+  /home/alvin/Documents/342L3/lab3/kernel/include/asm.h \
+  /home/alvin/Documents/342L3/lab3/kernel/include/bits/swi.h
+
+/home/alvin/Documents/342L3/lab3/kernel/include/asm.h:
+
+/home/alvin/Documents/342L3/lab3/kernel/include/bits/swi.h:

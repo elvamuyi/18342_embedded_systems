@@ -8,9 +8,9 @@
  * @date   Tue, 29 Oct 2013 16:09
  */
 
+#include <types.h>
 #include <kernel.h>
 #include <exports.h>
-#include <types.h>
 #include <bits/errno.h>
 #include <bits/fileno.h>
 
@@ -25,7 +25,7 @@ ssize_t read(int fd, void *buf, size_t count)
         if (buf_val + count >= U_Boot)
             return -EFAULT;
     }
-    else if (buf_val+1 >= FlashROM_LOW+1) {
+    else if (buf_val + 1 >= FlashROM_LOW + 1) {
         if (buf_val + count > FlashROM_HIGH)
             return -EFAULT;
     } else
@@ -39,7 +39,7 @@ ssize_t read(int fd, void *buf, size_t count)
         if (c == 4) break;
         // Backspace or delete
         else if (c == 8 || c == 127) {
-            if (length != 0) {
+            if (length > 0) {
                 *((char *) buf + length - 1) = '\0';
                 puts("\\b \\b");
                 length--;

@@ -22,11 +22,8 @@ FUNC(Call_UserApp)
     @ Save kernel stack ptr into global variable
     LDR     ip, =kStackPtr
     STR     sp, [ip]
-    @ Save $r8 into global variable
-    LDR     ip, =UBoot_R8
-    STR     r8, [ip]
     MSR     cpsr_c, #0xd0
     MOV     sp, r1
     MOV     lr, pc
     LDR     pc, =USER_APP_ADDR
-    SWI     EXIT_SWI    // Exit with UserApp return value
+    SWI     EXIT_SWI @ Exit with UserApp return value

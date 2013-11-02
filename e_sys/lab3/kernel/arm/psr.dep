@@ -1,0 +1,11 @@
+/home/alvin/Documents/342L3/lab3/kernel/arm/psr.o:  \
+ /home/alvin/Documents/342L3/lab3/kernel/arm/psr.c \
+  /home/alvin/Documents/342L3/lab3/kernel/include/types.h \
+  /home/alvin/Documents/342L3/lab3/kernel/include/arm/psr.h \
+  /home/alvin/Documents/342L3/lab3/kernel/include/inline.h
+
+/home/alvin/Documents/342L3/lab3/kernel/include/types.h:
+
+/home/alvin/Documents/342L3/lab3/kernel/include/arm/psr.h:
+
+/home/alvin/Documents/342L3/lab3/kernel/include/inline.h:

@@ -1,0 +1,17 @@
+/home/alvin/Documents/342L3/lab3/tasks/rot13/rot13.o:  \
+ /home/alvin/Documents/342L3/lab3/tasks/rot13/rot13.c \
+  /home/alvin/Documents/342L3/lab3/tasks/libc/include/unistd.h \
+  /home/alvin/Documents/342L3/lab3/tasks/libc/include/bits/fileno.h \
+  /home/alvin/Documents/342L3/lab3/tasks/libc/include/sys/types.h \
+  /home/alvin/Documents/342L3/lab3/tasks/libc/include/bits/types.h \
+  /home/alvin/Documents/342L3/lab3/tasks/libc/include/stdlib.h
+
+/home/alvin/Documents/342L3/lab3/tasks/libc/include/unistd.h:
+
+/home/alvin/Documents/342L3/lab3/tasks/libc/include/bits/fileno.h:
+
+/home/alvin/Documents/342L3/lab3/tasks/libc/include/sys/types.h:
+
+/home/alvin/Documents/342L3/lab3/tasks/libc/include/bits/types.h:
+
+/home/alvin/Documents/342L3/lab3/tasks/libc/include/stdlib.h:

@@ -1,0 +1,23 @@
+/home/alvin/Documents/342L3/lab3/tasks/libc/stdio/puts.o:  \
+ /home/alvin/Documents/342L3/lab3/tasks/libc/stdio/puts.c \
+  /home/alvin/Documents/342L3/lab3/tasks/libc/include/stdio.h \
+  /home/alvin/Documents/342L3/lab3/tasks/libc/include/stdarg.h \
+  /home/alvin/Documents/342L3/lab3/tasks/libc/include/sys/types.h \
+  /home/alvin/Documents/342L3/lab3/tasks/libc/include/bits/types.h \
+  /home/alvin/Documents/342L3/lab3/tasks/libc/include/string.h \
+  /home/alvin/Documents/342L3/lab3/tasks/libc/include/unistd.h \
+  /home/alvin/Documents/342L3/lab3/tasks/libc/include/bits/fileno.h
+
+/home/alvin/Documents/342L3/lab3/tasks/libc/include/stdio.h:
+
+/home/alvin/Documents/342L3/lab3/tasks/libc/include/stdarg.h:
+
+/home/alvin/Documents/342L3/lab3/tasks/libc/include/sys/types.h:
+
+/home/alvin/Documents/342L3/lab3/tasks/libc/include/bits/types.h:
+
+/home/alvin/Documents/342L3/lab3/tasks/libc/include/string.h:
+
+/home/alvin/Documents/342L3/lab3/tasks/libc/include/unistd.h:
+
+/home/alvin/Documents/342L3/lab3/tasks/libc/include/bits/fileno.h:

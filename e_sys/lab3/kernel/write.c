@@ -8,9 +8,9 @@
  * @date   Tue, 29 Oct 2013 16:09
  */
 
+#include <types.h>
 #include <kernel.h>
 #include <exports.h>
-#include <types.h>
 #include <bits/errno.h>
 #include <bits/fileno.h>
 

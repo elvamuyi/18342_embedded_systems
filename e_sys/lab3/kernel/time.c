@@ -12,7 +12,7 @@
 #include <exports.h>
 #include <types.h>
 
-unsigned long time(void)
+size_t time(void)
 {
     return get_timer(0);
 }

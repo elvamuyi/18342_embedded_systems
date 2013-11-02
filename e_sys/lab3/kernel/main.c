@@ -8,29 +8,31 @@
  * @date   Tue, 29 Oct 2013 15:55
  */
 
+#include <types.h>
 #include <kernel.h>
 #include <exports.h>
-#include <types.h>
 
-#include <bits/swi.h>
 #include <arm/psr.h>
+#include <bits/swi.h>
+#include <arm/timer.h>
 #include <arm/exception.h>
 #include <arm/interrupt.h>
-#include <arm/timer.h>
-
-uint32_t global_data;
 
 // U-Boot global data structure
-unsigned UBoot_R8;
+unsigned global_data;
 // SP of kernel before jumping to UserApp
 unsigned kStackPtr;
 
-// Install the customized SWI Handler
-unsigned* Install_SWI_Handler(unsigned []);
-// Customized SWI Handler (C half)
-int C_SWI_Handler(unsigned, unsigned *);
+// Install the customized SWI/IRQ Handler
+unsigned* Install_Handler(unsigned [], int);
 // Customized SWI Handler (Assembly half)
-extern int SWI_Handler();
+extern int SWI_Handler(void);
+// Customized SWI Handler (C half)
+void C_SWI_Handler(unsigned, unsigned *);
+// Customized IRQ Handler (Assembly half)
+extern int IRQ_Handler(void);
+// Customized IRQ Handler (C half)
+void C_IRQ_Handler(void);
 
 // Call user applications (C half)
 unsigned* C_Call_UserApp(int, char*[]);
@@ -39,47 +41,62 @@ extern int Call_UserApp(int, unsigned *);
 
 // Syscalls
 extern void exit(int);
+extern size_t time(void);
+extern void sleep(size_t);
 extern ssize_t read(int, void *, size_t);
 extern ssize_t write(int, const void *, size_t);
-extern unsigned long time();
-extern void sleep(unsigned long);
 
-int kmain(int argc, char** argv, uint32_t table)
+int kmain(int argc, char** argv, unsigned table)
 {
-	app_startup(); /* bss is valid after this point */
-	global_data = table;
+    app_startup(); /* bss is valid after this point */
+    global_data = table;
 
-	// Install our new SWI Handler. Save the old address
-    unsigned oldSwi_ins[2];
-    unsigned *oldSwi = Install_SWI_Handler(oldSwi_ins);
+    // Install our new SWI Handler. Save the old address
+    unsigned oldSWI_ins[2];
+    unsigned *oldSWI = Install_Handler(oldSWI_ins, 0);
+    if (oldSWI == NULL) return 0xbadc0de;
+
+    // Install our new IRQ Handler. Save the old address
+    unsigned oldIRQ_ins[2];
+    unsigned *oldIRQ = Install_Handler(oldIRQ_ins, 1);
+    if (oldIRQ == NULL) return 0xbadc0de;
 
     // Call the user application
     unsigned* uStack = C_Call_UserApp(argc, argv);
     int UserApp_Return = Call_UserApp(argc, uStack);
 
-    // Restore the SWI handler
-    *oldSwi = oldSwi_ins[0];
-    *(oldSwi + 1) = oldSwi_ins[1];
+    // Restore the SWI and IRQ handler
+    *oldSWI = oldSWI_ins[0];
+    *(oldSWI + 1) = oldSWI_ins[1];
+    *oldIRQ = oldIRQ_ins[0];
+    *(oldIRQ + 1) = oldIRQ_ins[1];
 
     return UserApp_Return;
 }
 
 /*
- * unsigned* Install_SWI_Handler(unsigned[])
- *  - Install the our customized SWI Handler
+ * unsigned* Install_Handler(unsigned[], int)
+ *  - Install the our customized SWI/IRQ Handler
  *  - Replace the handler's first 2 instructions and save the original ones
  * Argumnet:
- *  - unsigned odlSwi_ins[]: Original SWI handler's instructions
+ *  - unsigned odl_ins[]: Original handler's instructions
+ *  - int IRQ_flag: 0 for SWI Handler, others for IRQ Handler
  * Return:
- *  - unsigned* oldSwi: Original SWI Handler address
+ *  - unsigned* oldPos: Original handler's address
  */
-unsigned* Install_SWI_Handler(unsigned oldSwi_ins[])
+unsigned* Install_Handler(unsigned old_ins[], int IRQ_flag)
 {
-    int (*SWI_Handler_Ptr)() = &SWI_Handler;
-
-    // Identify the SWI vector
-    unsigned *jmp_table = 0x0;
-    unsigned *vector = (unsigned *) SWI_VECTOR;
+    // Identify the SWI/IRQ vector
+    unsigned *vector;
+    int (*Handler_Ptr)();
+    if (IRQ_flag) {
+        vector = (unsigned *) IRQ_VECTOR;  // Install IRQ Handler
+        Handler_Ptr = &IRQ_Handler;
+    } else {
+        vector = (unsigned *) SWI_VECTOR;  // Install SWI Handler
+        Handler_Ptr = &SWI_Handler;
+    }
+    unsigned *jmp_table;
     unsigned offset = ((unsigned)(*vector)) & 0x00000FFF;
     unsigned ldr_pc = ((unsigned)(*vector)) & 0xFFFFF000;
     // Positive offset
@@ -90,52 +107,58 @@ unsigned* Install_SWI_Handler(unsigned oldSwi_ins[])
         jmp_table = (unsigned *)((unsigned) vector + 0x8 - offset);
     // Unrecognized instuction
     else {
-        printf("Unrecognized SWI vector\n");
-        exit(0xbadc0de);
+        printf("Unrecognized vector\n");
+        return NULL;
     }
     
-    // Extract the addr of SWI Handler
-    unsigned *oldSwi = (unsigned *) *jmp_table;
-    // Store the old SWI Handler's first 2 instructions
-    oldSwi_ins[0] = (unsigned) *oldSwi;
-    oldSwi_ins[1] = (unsigned) *(oldSwi + 1);
+    // Extract the addr of SWI/IRQ Handler
+    unsigned *oldPos = (unsigned *) *jmp_table;
+    // Store the old SWI/IRQ Handler's first 2 instructions
+    old_ins[0] = (unsigned) *oldPos;
+    old_ins[1] = (unsigned) *(oldPos + 1);
 
     // Replace the old handler's first 2 instructions
-    *oldSwi = 0xe51ff004;  // LDR pc, [pc, #-4]
-    *(oldSwi + 1) = (unsigned) SWI_Handler_Ptr;
+    *oldPos = 0xe51ff004;  // LDR pc, [pc, #-4]
+    *(oldPos + 1) = (unsigned) Handler_Ptr;
 
-    return oldSwi;
+    return oldPos;
 }
 
 /*
- * int C_SWI_Handler(unsigned, unsigned *)
+ * void C_SWI_Handler(unsigned, unsigned *)
  *  - SWI Handler (C half), called by SWI Handler (Assembly half)
  *  - Call the corresponding syscall
+ *  - Syscall's return value saved in $R0 (except exit that never returns)
  * Argumnet:
  *  - unsigned swi_num: SWI number
  *  - unsigned *regs: Register list pointer
- * Return:
- *  - Syscall's return value (except exit that never returns)
  */
-int C_SWI_Handler(unsigned swi_num, unsigned *regs)
+void C_SWI_Handler(unsigned swi_num, unsigned *regs)
 {
     switch (swi_num) {
         case EXIT_SWI:
             exit((int)*regs);
         case READ_SWI:
-            return read((int)*regs, (void *)*(regs + 1), (size_t)*(regs + 2));
+            read((int)*regs, (void *)*(regs + 1), (size_t)*(regs + 2));
+            break;
         case WRITE_SWI:
-            return write((int)*regs, (void *)*(regs + 1), (size_t)*(regs + 2));
+            write((int)*regs, (void *)*(regs + 1), (size_t)*(regs + 2));
+            break;
         case TIME_SWI:
-            return time();
+            time();
+            break;
         case SLEEP_SWI:
-            sleep((long)*regs);
-            return 1;
+            sleep((*regs) * 1000);
+            break;
         default:
             printf("Invalid syscall\n");
             exit(0xbadc0de);
     }
-    return 1;
+}
+
+void C_IRQ_Handler(void)
+{
+   // TODO: Handle ICPR and get_timer 
 }
 
 /*

@@ -1,11 +1,11 @@
-/** @file  exit.S
+/** @file exit.S
  *
- * @brief  exit sycall wrapper
+ * @brief exit sycall wrapper
  *
  * @author Alvin Zheng <dongxuez@andrew.cmu.edu>
- *         Minghao Wang <minghaow@andrew.cmu.edu>
- *         Yining Yang <yiningy@andrew.cmu.edu>
- * @date   Tue, 29 Oct 2013 15:38
+ * @       Minghao Wang <minghaow@andrew.cmu.edu>
+ * @       Yining Yang <yiningy@andrew.cmu.edu>
+ * @date   2013/10/30
  */
 
 #include <asm.h>

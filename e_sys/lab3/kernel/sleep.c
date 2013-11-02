@@ -12,7 +12,7 @@
 #include <exports.h>
 #include <types.h>
 
-void sleep(unsigned long millis)
+void sleep(size_t millis)
 {
     udelay(millis);
 }
