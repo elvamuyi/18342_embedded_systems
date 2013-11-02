@@ -1,0 +1,23 @@
+/home/minghaowang/Desktop/lab3/e_sys/lab3/tasks/typo/typo.o:  \
+ /home/minghaowang/Desktop/lab3/e_sys/lab3/tasks/typo/typo.c \
+  /home/minghaowang/Desktop/lab3/e_sys/lab3/tasks/libc/include/unistd.h \
+  /home/minghaowang/Desktop/lab3/e_sys/lab3/tasks/libc/include/bits/fileno.h \
+  /home/minghaowang/Desktop/lab3/e_sys/lab3/tasks/libc/include/sys/types.h \
+  /home/minghaowang/Desktop/lab3/e_sys/lab3/tasks/libc/include/bits/types.h \
+  /home/minghaowang/Desktop/lab3/e_sys/lab3/tasks/libc/include/stdio.h \
+  /home/minghaowang/Desktop/lab3/e_sys/lab3/tasks/libc/include/stdarg.h \
+  /home/minghaowang/Desktop/lab3/e_sys/lab3/tasks/libc/include/stdlib.h
+
+/home/minghaowang/Desktop/lab3/e_sys/lab3/tasks/libc/include/unistd.h:
+
+/home/minghaowang/Desktop/lab3/e_sys/lab3/tasks/libc/include/bits/fileno.h:
+
+/home/minghaowang/Desktop/lab3/e_sys/lab3/tasks/libc/include/sys/types.h:
+
+/home/minghaowang/Desktop/lab3/e_sys/lab3/tasks/libc/include/bits/types.h:
+
+/home/minghaowang/Desktop/lab3/e_sys/lab3/tasks/libc/include/stdio.h:
+
+/home/minghaowang/Desktop/lab3/e_sys/lab3/tasks/libc/include/stdarg.h:
+
+/home/minghaowang/Desktop/lab3/e_sys/lab3/tasks/libc/include/stdlib.h:

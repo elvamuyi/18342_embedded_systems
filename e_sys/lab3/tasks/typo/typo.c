@@ -1,32 +1,36 @@
-/** @file  typo.c
+/** @file typo.c
  *
- * @brief  Echos characters back with timing data.
+ * @brief Echos characters back with timing data.
  *
- * @author Alvin Zheng <dongxuez@andrew.cmu.edu>
- *         Minghao Wang <minghaow@andrew.cmu.edu>
- *         Yining Yang <yiningy@andrew.cmu.edu>
- * @date   Thu, 31 Oct 2013 21:09
+ * Links to libc.
  */
- 
 #include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
 
-#define BLOCK_SIZE 64
-#define SLEEP_TIME 1000
+#define BLOCK_SIZE 255
 
 int main(int argc, char** argv)
 {
-    int i;
-    for (i = 1; i < argc; i++) {
-        write(STDOUT_FILENO, argv[i], BLOCK_SIZE);
-        write(STDOUT_FILENO, "\n", 1);
-    }
-    
-    printf("Current time is %ld\n", time());
-    sleep(SLEEP_TIME);
-    printf("After sleeping for %d:\n", SLEEP_TIME);
-    printf("Current time is %ld\n", time());
-    
+	int i,t;
+	char buffer[BLOCK_SIZE];
+	
+	while (1) {
+		write(STDOUT_FILENO, "> ", 2);
+		
+		t = time();
+		if (read(STDIN_FILENO, buffer, BLOCK_SIZE) < 0)
+			exit(1);
+		t = time() - t;
+		
+		if (write(STDOUT_FILENO, buffer, BLOCK_SIZE) < 0)
+			exit(1);
+		
+		for (i = 0; i < BLOCK_SIZE; i++)
+			buffer[i] = '\0';
+		
+		printf("\n%d.%ds\n", t/10000000, t/1000000-(t/10000000)*10);
+	}
+
 	return 0;
 }
-
