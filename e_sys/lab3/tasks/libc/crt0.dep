@@ -1,8 +1,0 @@
-/home/alvin/Documents/342L3/lab3/tasks/libc/crt0.o:  \
- /home/alvin/Documents/342L3/lab3/tasks/libc/crt0.S \
-  /home/alvin/Documents/342L3/lab3/tasks/libc/include/asm.h \
-  /home/alvin/Documents/342L3/lab3/tasks/libc/include/bits/swi.h
-
-/home/alvin/Documents/342L3/lab3/tasks/libc/include/asm.h:
-
-/home/alvin/Documents/342L3/lab3/tasks/libc/include/bits/swi.h:
