@@ -10,10 +10,10 @@
 int main(int argc, char** argv)
 {
 	const char spinChr[] = "|/-\\";
-	int i=0;
+	int i = 0;
 	while (1) {
 		printf("...........  ");
-		putchar(spinChr[(i++)%4]);
+		putchar(spinChr[(i++) % 4]);
 		printf("  ...........");
 		putchar('\r');
 		sleep(200);

@@ -13,4 +13,8 @@
 	.file	"IRQ_Handler.S"
 
 FUNC(IRQ_Handler)
-   // TODO 
+    STMFD   sp!, {r0-r12, lr}
+    MOV     lr, pc
+    LDR     pc, =C_IRQ_Handler
+    LDMFD   sp!, {r0-r12, lr}
+    MOVS    pc, lr

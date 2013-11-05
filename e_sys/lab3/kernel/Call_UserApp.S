@@ -19,10 +19,14 @@
 
 FUNC(Call_UserApp)
     STMFD   sp!, {r1-r12, lr}
-    @ Save kernel stack ptr into global variable
+    // Save kernel stack ptr into global variable
     LDR     ip, =kStackPtr
     STR     sp, [ip]
-    MSR     cpsr_c, #0xd0
+    // Initialize sp_irq
+    MSR     cpsr_c, #0xd2
+    MOV     sp, r2
+    // Transfer to user mode
+    MSR     cpsr_c, #0x50
     MOV     sp, r1
     MOV     lr, pc
     LDR     pc, =USER_APP_ADDR

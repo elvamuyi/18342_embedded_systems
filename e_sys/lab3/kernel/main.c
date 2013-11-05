@@ -11,11 +11,10 @@
 #include <types.h>
 #include <kernel.h>
 #include <exports.h>
-
-#include <arm/psr.h>
 #include <bits/swi.h>
+
+#include <arm/reg.h>
 #include <arm/timer.h>
-#include <arm/exception.h>
 #include <arm/interrupt.h>
 
 // U-Boot global data structure
@@ -37,7 +36,11 @@ void C_IRQ_Handler(void);
 // Call user applications (C half)
 unsigned* C_Call_UserApp(int, char*[]);
 // Call user applications (Assembly half)
-extern int Call_UserApp(int, unsigned *);
+extern int Call_UserApp(int, unsigned *, unsigned);
+
+// Timer driver
+extern void initTimer(void);
+extern void addTimer(void);
 
 // Syscalls
 extern void exit(int);
@@ -61,9 +64,11 @@ int kmain(int argc, char** argv, unsigned table)
     unsigned *oldIRQ = Install_Handler(oldIRQ_ins, 1);
     if (oldIRQ == NULL) return 0xbadc0de;
 
+    initTimer();
+
     // Call the user application
     unsigned* uStack = C_Call_UserApp(argc, argv);
-    int UserApp_Return = Call_UserApp(argc, uStack);
+    int UserApp_Return = Call_UserApp(argc, uStack, IRQ_STACK_ADDR);
 
     // Restore the SWI and IRQ handler
     *oldSWI = oldSWI_ins[0];
@@ -74,7 +79,7 @@ int kmain(int argc, char** argv, unsigned table)
     return UserApp_Return;
 }
 
-/*
+/**
  * unsigned* Install_Handler(unsigned[], int)
  *  - Install the our customized SWI/IRQ Handler
  *  - Replace the handler's first 2 instructions and save the original ones
@@ -87,15 +92,9 @@ int kmain(int argc, char** argv, unsigned table)
 unsigned* Install_Handler(unsigned old_ins[], int IRQ_flag)
 {
     // Identify the SWI/IRQ vector
-    unsigned *vector;
-    int (*Handler_Ptr)();
-    if (IRQ_flag) {
-        vector = (unsigned *) IRQ_VECTOR;  // Install IRQ Handler
-        Handler_Ptr = &IRQ_Handler;
-    } else {
-        vector = (unsigned *) SWI_VECTOR;  // Install SWI Handler
-        Handler_Ptr = &SWI_Handler;
-    }
+    unsigned *vector = IRQ_flag ? 
+        (unsigned *) IRQ_VECTOR : // Install IRQ Handler
+        (unsigned *) SWI_VECTOR ; // Install SWI Handler
     unsigned *jmp_table;
     unsigned offset = ((unsigned)(*vector)) & 0x00000FFF;
     unsigned ldr_pc = ((unsigned)(*vector)) & 0xFFFFF000;
@@ -119,12 +118,13 @@ unsigned* Install_Handler(unsigned old_ins[], int IRQ_flag)
 
     // Replace the old handler's first 2 instructions
     *oldPos = 0xe51ff004;  // LDR pc, [pc, #-4]
-    *(oldPos + 1) = (unsigned) Handler_Ptr;
+    *(oldPos + 1) = IRQ_flag ? 
+        (unsigned) (&IRQ_Handler) : (unsigned) (&SWI_Handler);
 
     return oldPos;
 }
 
-/*
+/**
  * void C_SWI_Handler(unsigned, unsigned *)
  *  - SWI Handler (C half), called by SWI Handler (Assembly half)
  *  - Call the corresponding syscall
@@ -148,7 +148,7 @@ void C_SWI_Handler(unsigned swi_num, unsigned *regs)
             time();
             break;
         case SLEEP_SWI:
-            sleep((*regs) * 1000);
+            sleep((size_t)(*regs));
             break;
         default:
             printf("Invalid syscall\n");
@@ -156,12 +156,33 @@ void C_SWI_Handler(unsigned swi_num, unsigned *regs)
     }
 }
 
+/**
+ * void C_IRQ_Handler(void)
+ *  - IRQ Handler (C half), called by IRQ Handler (Assembly half)
+ *  - Handle OSMR0 timer interrupt only
+ *  - Update a timer variable in Timer_Driver
+ */
 void C_IRQ_Handler(void)
 {
-   // TODO: Handle ICPR and get_timer 
+    /*
+    volatile unsigned* icip = (unsigned *) ICIP_ADDR;
+    volatile unsigned* ossr = (unsigned *) OSSR_ADDR;
+    volatile unsigned* oscr = (unsigned *) OSCR_ADDR;
+    if ((*icip) & 0x4000000) {
+        addTimer();
+        *ossr = (*ossr) | 0x1;
+        *oscr = 0x0;
+    }
+    */
+    if (reg_read(INT_ICIP_ADDR) & 0x4000000) {
+        addTimer();
+        // Clear the interrupt and reset the OSCR
+        reg_set(OSTMR_OSSR_ADDR, 0x1);
+        reg_write(OSTMR_OSCR_ADDR, 0x0);
+    }
 }
 
-/*
+/**
  * unsigned* C_Call_UserApp(int, char *[])
  *  - Preparation for calling UserApp (C half)
  *  - Push the argc and argv into user mode stack

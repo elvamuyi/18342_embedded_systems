@@ -41,7 +41,7 @@ ssize_t read(int fd, void *buf, size_t count)
         else if (c == 8 || c == 127) {
             if (length > 0) {
                 *((char *) buf + length - 1) = '\0';
-                puts("\\b \\b");
+                puts("\b \b");
                 length--;
             }
         }

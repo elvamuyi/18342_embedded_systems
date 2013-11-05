@@ -8,11 +8,14 @@
  * @date   Thu, 31 Oct 2013 21:09
  */
 
-#include <kernel.h>
-#include <exports.h>
 #include <types.h>
 
-void sleep(size_t millis)
+extern size_t getTimer(void);
+
+void sleep(size_t sleep_time)
 {
-    udelay(millis);
+    size_t wait_time = getTimer() + sleep_time;
+    asm volatile ("MSR cpsr_c, #0x53");
+    while (getTimer() < wait_time);
+    asm volatile ("MSR cpsr_c, #0xd3");
 }

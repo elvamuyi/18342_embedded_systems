@@ -12,7 +12,7 @@
 
 int main(int argc, char** argv)
 {
-	int i,t;
+	int i, t;
 	char buffer[BLOCK_SIZE];
 	
 	while (1) {
@@ -29,7 +29,8 @@ int main(int argc, char** argv)
 		for (i = 0; i < BLOCK_SIZE; i++)
 			buffer[i] = '\0';
 		
-		printf("\n%d.%ds\n", t/10000000, t/1000000-(t/10000000)*10);
+		//printf("\n%d.%ds\n", t/10000, t/1000-(t/10000)*10);
+		printf("\n%dms\n", t);
 	}
 
 	return 0;

@@ -8,11 +8,11 @@
  * @date   Thu, 31 Oct 2013 21:09
  */
 
-#include <kernel.h>
-#include <exports.h>
 #include <types.h>
+
+extern size_t getTimer(void);
 
 size_t time(void)
 {
-    return get_timer(0);
+    return getTimer();
 }
