@@ -16,16 +16,21 @@ int main(int argc, char** argv)
 {
      while (1) {
 	int i, j;
-	char buffer[BLOCK_SIZE];
+	char buffer[BLOCK_SIZE] = {0};
+
+	// print game welcome information
 	const char hello[] = "Stop your car in the parking slot!\r\n\n";
 	printf("\r\n\n\n=====================Game====================\r\n");
 	write(STDOUT_FILENO, hello, sizeof(hello) - 1);
 
+	// count down
 	for (i = 3; i > 0; i--) {
 		printf(" ... %d ... ", i);
 		putchar('\r');
+		sleep(200);
 	}
 
+	// game start, the car starts to run
 	for (i = 0; i < 17; i++) {
 		j = 0;
 		while (j < i) {
@@ -39,13 +44,14 @@ int main(int argc, char** argv)
 			j++;
 		}
 
-		// print mistery
+		// print shield
 	        for (j = 0; j < 20; j++) {
                 	putchar((char)87);
         	}
 		putchar('\r');
 		sleep(100);
 	}
+	// hard to write in loops, save time
 	printf(".................[##WWWWWWWWWWWWWWWWWWW\r");
 	sleep(100);
 	printf("..................[#WWWWWWWWWWWWWWWWWWW\r");
@@ -53,13 +59,15 @@ int main(int argc, char** argv)
 	printf("...................[WWWWWWWWWWWWWWWWWWW\r");
 	sleep(100);
 	printf("....................WWWWWWWWWWWWWWWWWWW\r");
-
+	
+	// waiting for users input
 	int startTime = time();
 	read(STDIN_FILENO, buffer, BLOCK_SIZE);
 	int endTime = time();
 	int timeDifference = endTime - startTime;
 	int position = timeDifference / 100;
-
+	
+	// print result
 	if (position > 15) {
 		printf("................................|...[#@|\r\n");
 		printf("!!!Hey!!! You just drive through the wall!");
@@ -83,6 +91,8 @@ int main(int argc, char** argv)
 		}
 	}
 	putchar('\n');
+
+	// print scores
 	printf("====================Result===================\r\n");
 	if (position > 15)
 		printf("= Score: 0! It is a good time to buy a new car.\r\n");
@@ -98,5 +108,5 @@ int main(int argc, char** argv)
 	printf("=============================================\r\n");
      }
 
-        return 1;
+     return 1;
 }
