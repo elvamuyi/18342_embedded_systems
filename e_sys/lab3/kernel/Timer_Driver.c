@@ -26,26 +26,6 @@ static size_t timer;
  */
 void initTimer(void)
 {
-    /*
-    volatile unsigned* oscr = (unsigned *) OSCR_ADDR;
-    volatile unsigned* osmr = (unsigned *) OSMR0_ADDR;
-    volatile unsigned* oier = (unsigned *) OIER_ADDR;
-    volatile unsigned* ossr = (unsigned *) OSSR_ADDR;
-    volatile unsigned* icmr = (unsigned *) ICMR_ADDR;
-    volatile unsigned* iclr = (unsigned *) ICLR_ADDR;
-
-    // Enable IRQ on the match between OSCR and OSMR0
-    *oier = (*oier) | 0x1;
-    *ossr = (*ossr) | 0xf;
-    *icmr = (*icmr) | 0x4000000;
-    *iclr = (*iclr) & 0xfbffffff;
-
-    // Initialize OSCR and OSMR
-    timer = 0;
-    *osmr = (unsigned) (OS_TIMER_FREQ / 1000 * TIMER_RESOLUTION);
-    *oscr = 0x0;
-    */
-
     // Enable IRQ on the match between OSCR and OSMR0
     reg_set(OSTMR_OIER_ADDR, 0x1);
     reg_set(OSTMR_OSSR_ADDR, 0xf);

@@ -2,8 +2,12 @@
  *
  * @brief Displays a spinning cursor.
  *
- * Links to libc.
+ * @author Alvin Zheng <dongxuez@andrew.cmu.edu>
+ *         Minghao Wang <minghaow@andrew.cmu.edu>
+ *         Yining Yang <yiningy@andrew.cmu.edu>
+ * @date   Tue, 29 Oct 2013 16:09
  */
+
 #include <unistd.h>
 #include <stdio.h>
 

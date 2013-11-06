@@ -22,7 +22,7 @@ FUNC(SWI_Handler)
     MOV     r1, sp
     LDR     ip, =global_data // Load U-Boot global data into r8
     LDR     r8, [ip]
-    MSR     cpsr_c, #0x53 // Enable IRQ in supervisor mode
+    //MSR     cpsr_c, #0x53 // Enable IRQ in supervisor mode
     MOV     lr, pc
     LDR     pc, =C_SWI_Handler // r0 saves the return value
     LDR     r2, [sp, #56]

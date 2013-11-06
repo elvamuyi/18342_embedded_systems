@@ -160,20 +160,10 @@ void C_SWI_Handler(unsigned swi_num, unsigned *regs)
  * void C_IRQ_Handler(void)
  *  - IRQ Handler (C half), called by IRQ Handler (Assembly half)
  *  - Handle OSMR0 timer interrupt only
- *  - Update a timer variable in Timer_Driver
+ *  - Increase the timer variable in Timer_Driver
  */
 void C_IRQ_Handler(void)
 {
-    /*
-    volatile unsigned* icip = (unsigned *) ICIP_ADDR;
-    volatile unsigned* ossr = (unsigned *) OSSR_ADDR;
-    volatile unsigned* oscr = (unsigned *) OSCR_ADDR;
-    if ((*icip) & 0x4000000) {
-        addTimer();
-        *ossr = (*ossr) | 0x1;
-        *oscr = 0x0;
-    }
-    */
     if (reg_read(INT_ICIP_ADDR) & 0x4000000) {
         addTimer();
         // Clear the interrupt and reset the OSCR

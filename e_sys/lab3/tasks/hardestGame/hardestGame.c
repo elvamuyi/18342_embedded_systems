@@ -1,12 +1,13 @@
 /** @file hardestGame.c
  *
- * @brief Prints out Hello world using the syscall interface.
+ * @brief Car parking game utilizing time and sleep functions
  *
- * Links to libc.
- *
- * @author Kartik Subramanian <ksubrama@andrew.cmu.edu>
- * @date   2008-10-29
+ * @author Alvin Zheng <dongxuez@andrew.cmu.edu>
+ *         Minghao Wang <minghaow@andrew.cmu.edu>
+ *         Yining Yang <yiningy@andrew.cmu.edu>
+ * @date   Tue, 29 Oct 2013 16:09
  */
+
 #include <unistd.h>
 #include <stdio.h>
 
@@ -14,12 +15,12 @@
 
 int main(int argc, char** argv)
 {
-     while (1) {
-	int i, j;
+    while (1) {
+    int i, j;
 	char buffer[BLOCK_SIZE] = {0};
 
 	// print game welcome information
-	const char hello[] = "Stop your car in the parking slot!\r\n\n";
+	const char hello[] = "Stop your car at the parking slot! (Press Enter)\r\n\n";
 	printf("\r\n\n\n=====================Game====================\r\n");
 	write(STDOUT_FILENO, hello, sizeof(hello) - 1);
 
@@ -45,9 +46,9 @@ int main(int argc, char** argv)
 		}
 
 		// print shield
-	        for (j = 0; j < 20; j++) {
-                	putchar((char)87);
-        	}
+        for (j = 0; j < 20; j++) {
+            putchar((char)87);
+        }
 		putchar('\r');
 		sleep(100);
 	}
@@ -106,7 +107,7 @@ int main(int argc, char** argv)
 		printf("= Score: %d. You'd better get more practice!\r\n", position-5);
 	else printf("= Dude, give it up, please.\r\n");
 	printf("=============================================\r\n");
-     }
-
-     return 1;
+    
+    }
+    return 1;
 }

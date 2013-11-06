@@ -31,6 +31,9 @@ ssize_t read(int fd, void *buf, size_t count)
     } else
         return -EFAULT;
 
+    // Enable IRQ time match
+    asm volatile ("MSR cpsr_c, #0x53");
+
     // Read routine
     size_t length = 0;
     while (length < count) {
@@ -60,5 +63,6 @@ ssize_t read(int fd, void *buf, size_t count)
         }
     }
     putc('\n');
+    asm volatile ("MSR cpsr_c, #0xd3");
     return (ssize_t) length;
 }
