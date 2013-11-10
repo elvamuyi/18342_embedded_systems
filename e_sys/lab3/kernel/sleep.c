@@ -15,7 +15,7 @@ extern size_t getTimer(void);
 void sleep(size_t sleep_time)
 {
     size_t wait_time = getTimer() + sleep_time;
-    asm volatile ("MSR cpsr_c, #0x53");
+    asm volatile ("MSR cpsr_c, #0x53":::"cc");
     while (getTimer() < wait_time);
-    asm volatile ("MSR cpsr_c, #0xd3");
+    asm volatile ("MSR cpsr_c, #0xd3":::"cc");
 }

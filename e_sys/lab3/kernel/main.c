@@ -40,6 +40,7 @@ extern int Call_UserApp(int, unsigned *, unsigned);
 
 // Timer driver
 extern void initTimer(void);
+extern void freeTimer(void);
 extern void addTimer(void);
 
 // Syscalls
@@ -69,6 +70,8 @@ int kmain(int argc, char** argv, unsigned table)
     // Call the user application
     unsigned* uStack = C_Call_UserApp(argc, argv);
     int UserApp_Return = Call_UserApp(argc, uStack, IRQ_STACK_ADDR);
+
+    freeTimer();
 
     // Restore the SWI and IRQ handler
     *oldSWI = oldSWI_ins[0];

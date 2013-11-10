@@ -27,8 +27,8 @@ static size_t timer;
 void initTimer(void)
 {
     // Enable IRQ on the match between OSCR and OSMR0
-    reg_set(OSTMR_OIER_ADDR, 0x1);
     reg_set(OSTMR_OSSR_ADDR, 0xf);
+    reg_set(OSTMR_OIER_ADDR, 0x1);
     reg_set(INT_ICMR_ADDR, 0x4000000);
     reg_clear(INT_ICLR_ADDR, 0x4000000);
 
@@ -36,6 +36,18 @@ void initTimer(void)
     timer = 0;
     reg_write(OSTMR_OSMR_ADDR(0), OSTMR_FREQ / 1000 * TIMER_RESOLUTION);
     reg_write(OSTMR_OSCR_ADDR, 0x0);
+}
+
+/**
+ * void freeTimer(void)
+ *  - Restore the timer interrupt registers
+ */
+void freeTimer(void)
+{
+    reg_set(OSTMR_OSSR_ADDR, 0xf);
+    reg_clear(OSTMR_OIER_ADDR, 0x1);
+    reg_clear(INT_ICMR_ADDR, 0x4000000);
+    reg_write(OSTMR_OSMR_ADDR(0), 0x0);
 }
 
 /**
@@ -49,7 +61,7 @@ void addTimer(void)
 
 /**
  * size_t getTimer(void)
- *  - Get the current time in millisecond 
+ *  - Get the current timer value in millisecond 
  *  - Multiply the timer value by TIMER_RESOLUTION
  * Return:
  *  - size_t getTimer: Current OS time

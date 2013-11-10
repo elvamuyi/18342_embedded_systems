@@ -1,5 +1,5 @@
 /*
- * kernel.h: Defines the memory layout
+ * kernel.h: Define the memory layout
  *
  * Author: Alvin Zheng <dongxuez@andrew.cmu.edu>
  * Date:   2013/10/24  12:00pm

@@ -17,4 +17,5 @@ FUNC(IRQ_Handler)
     MOV     lr, pc
     LDR     pc, =C_IRQ_Handler
     LDMFD   sp!, {r0-r12, lr}
+    SUB     lr, lr, #4
     MOVS    pc, lr
