@@ -25,10 +25,10 @@ static size_t timer;
 void init_timer(void)
 {
     // Enable IRQ on the match between OSCR and OSMR0
-    reg_set(OSTMR_OSSR_ADDR, 0xf);
-    reg_set(OSTMR_OIER_ADDR, 0x1);
-    reg_set(INT_ICMR_ADDR, 0x4000000);
-    reg_clear(INT_ICLR_ADDR, 0x4000000);
+    reg_set(OSTMR_OSSR_ADDR, OSTMR_OSSR_M0);
+    reg_set(OSTMR_OIER_ADDR, OSTMR_OIER_E0);
+    reg_set(INT_ICMR_ADDR, (1 << INT_OSTMR_0));
+    reg_clear(INT_ICLR_ADDR, (1 << INT_OSTMR_0));
 
     // Initialize OSCR and OSMR
     timer = 0;
@@ -42,9 +42,9 @@ void init_timer(void)
  */
 void destroy_timer(void)
 {
-    reg_set(OSTMR_OSSR_ADDR, 0xf);
-    reg_clear(OSTMR_OIER_ADDR, 0x1);
-    reg_clear(INT_ICMR_ADDR, 0x4000000);
+    reg_set(OSTMR_OSSR_ADDR, OSTMR_OSSR_M0);
+    reg_clear(OSTMR_OIER_ADDR, OSTMR_OIER_E0);
+    reg_clear(INT_ICMR_ADDR, (1 << INT_OSTMR_0));
     reg_write(OSTMR_OSMR_ADDR(0), 0x0);
 }
 
@@ -56,7 +56,7 @@ void destroy_timer(void)
 void timer_handler(void)
 {
     timer++;
-    reg_set(OSTMR_OSSR_ADDR, 0x1);
+    reg_set(OSTMR_OSSR_ADDR, OSTMR_OSSR_M0);
     reg_write(OSTMR_OSCR_ADDR, 0x0);
 }
 

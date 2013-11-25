@@ -36,7 +36,7 @@ void destroy_interrupt() {
  */
 void irq_handler()
 {
-    if (reg_read(INT_ICIP_ADDR) & 0x4000000) {
+    if (reg_read(INT_ICIP_ADDR) & (1 << INT_OSTMR_0)) {
         timer_handler();
         dev_update(get_millis());
     }
