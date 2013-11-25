@@ -2,8 +2,11 @@
  * @file device.c
  *
  * @brief Implements simulated devices.
- * @author Kartik Subramanian <ksubrama@andrew.cmu.edu>
- * @date 2008-12-01
+ *
+ * @author Alvin Zheng <dongxuez@andrew.cmu.edu>
+ *         Minghao Wang <minghaow@andrew.cmu.edu>
+ *         Yining Yang <yiningy@andrew.cmu.edu>
+ * @date   21 Nov, 2013 16:09
  */
 
 #include <types.h>
@@ -37,7 +40,7 @@ struct dev
 typedef struct dev dev_t;
 
 /* devices will be periodically signaled at the following frequencies */
-const size_t dev_freq[NUM_DEVICES] = {100, 200, 500, 50};
+const unsigned long dev_freq[NUM_DEVICES] = {100, 200, 500, 50};
 static dev_t devices[NUM_DEVICES];
 
 /**
@@ -61,12 +64,11 @@ void dev_init(void)
 void dev_wait(unsigned dev __attribute__((unused)))
 {
 	// Remove from run queue
-    tcb_t* task_to_sleep = runqueue_remove(get_cur_prio());
+    tcb_t* task_to_sleep = get_cur_tcb();
 
     // Add to sleep queue
-    tcb_t* top = devices[dev].sleep_queue;
+    task_to_sleep->sleep_queue = devices[dev].sleep_queue;
     devices[dev].sleep_queue = task_to_sleep;
-    task_to_sleep->sleep_queue = top;
 
     // Context switch
     dispatch_sleep();
@@ -81,27 +83,34 @@ void dev_wait(unsigned dev __attribute__((unused)))
  */
 void dev_update(size_t millis __attribute__((unused)))
 {
-	// Find out current device & update next_match
     int cur_dev;
     tcb_t *sq_ptr1, *sq_ptr2;
-    for (cur_dev = 0; cur_dev < NUM_DEVICES; cur_dev++) {
-        if (devices[cur_dev].next_match != millis)
+    bool_e update_flag = FALSE;
+    for (cur_dev = 0; cur_dev < NUM_DEVICES; cur_dev++)
+    {
+        // Not meet the time yet
+        if (devices[cur_dev].next_match > millis)
             continue;
 
         // Update the device timer
-        devices[cur_dev].next_match += dev_freq[cur_dev];
+        devices[cur_dev].next_match = millis + dev_freq[cur_dev];
 
         // Remove from sleep_queue & add to run_queue
         sq_ptr1 = devices[cur_dev].sleep_queue;
-        while (sq_ptr1 != NULL) {
-            // Get next sleep task
-            sq_ptr2 = sq_ptr1;
-            sq_ptr1 = sq_ptr1->sleep_queue;
-            // Remove from sleep_queue
-            sq_ptr2->sleep_queue = NULL;
-            // Add to the run_queue
-            runqueue_add(sq_ptr2, sq_ptr2->cur_prio);
+        if (sq_ptr1 != NULL) {
+            update_flag = TRUE;
+            do {
+                // Get next sleep task
+                sq_ptr2 = sq_ptr1;
+                sq_ptr1 = sq_ptr1->sleep_queue;
+                // Remove from sleep_queue
+                sq_ptr2->sleep_queue = NULL;
+                // Add to the run_queue
+                runqueue_add(sq_ptr2, sq_ptr2->cur_prio);
+            } while(sq_ptr1 != NULL);
+            devices[cur_dev].sleep_queue = NULL;
         }
-        devices[cur_dev].sleep_queue = NULL;
     }
+    // If any task is activated, call dispatch_save
+    if (update_flag) dispatch_save();
 }

@@ -2,20 +2,18 @@
  * 
  * @brief Top level implementation of the scheduler.
  *
- * @author Kartik Subramanian <ksubrama@andrew.cmu.edu>
- * @date 2008-11-20
+ * @author Alvin Zheng <dongxuez@andrew.cmu.edu>
+ *         Minghao Wang <minghaow@andrew.cmu.edu>
+ *         Yining Yang <yiningy@andrew.cmu.edu>
+ * @date   21 Nov, 2013 16:09
  */
 
 #include <types.h>
-#include <assert.h>
 
-#include <kernel.h>
 #include <config.h>
 #include "sched_i.h"
 
-#include <arm/reg.h>
 #include <arm/psr.h>
-#include <arm/physmem.h>
 #include <arm/exception.h>
 
 tcb_t system_tcb[OS_MAX_TASKS]; /* Allocate memory for system TCBs */
@@ -44,20 +42,17 @@ static void __attribute__((unused)) idle(void)
  */
 void allocate_tasks(task_t** tasks __attribute__((unused)), size_t num_tasks __attribute__((unused)))
 {
-    if (num_tasks >= OS_AVAIL_TASKS || tasks == NULL)
-        return;
-
     runqueue_init();
 
     // Reserve priority 0
     uint8_t prio;
     size_t i_task;
-    for (prio = 1, i_task = 0; i_task < num_tasks; i_task++) {
+    for (i_task = 0, prio = 1; i_task < num_tasks; i_task++, prio++) {
         system_tcb[prio].native_prio = prio;
         system_tcb[prio].cur_prio = prio;
-        system_tcb[prio].context.r4 = (uint32_t) tasks[i_task]->lambda;
-        system_tcb[prio].context.r5 = (uint32_t) tasks[i_task]->data;
-        system_tcb[prio].context.r6 = (uint32_t) tasks[i_task]->stack_pos;
+        system_tcb[prio].context.r4 = (uint32_t) ((*tasks)[i_task].lambda);
+        system_tcb[prio].context.r5 = (uint32_t) ((*tasks)[i_task].data);
+        system_tcb[prio].context.r6 = (uint32_t) ((*tasks)[i_task].stack_pos);
         system_tcb[prio].context.lr = launch_task;
         system_tcb[prio].context.sp = system_tcb[prio].kstack_high;
         system_tcb[prio].holds_lock = 0;

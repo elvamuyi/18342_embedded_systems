@@ -2,8 +2,10 @@
  * 
  * @brief C wrappers around assembly context switch routines.
  *
- * @author Kartik Subramanian <ksubrama@andrew.cmu.edu>
- * @date 2008-11-21
+ * @author Alvin Zheng <dongxuez@andrew.cmu.edu>
+ *         Minghao Wang <minghaow@andrew.cmu.edu>
+ *         Yining Yang <yiningy@andrew.cmu.edu>
+ * @date   21 Nov, 2013 16:09
  */
  
 
@@ -42,16 +44,14 @@ void dispatch_init(tcb_t* idle __attribute__((unused)))
  */
 void dispatch_save(void)
 {
-    // Remove current task from run_queue
+    // If the current task is highest priority, make it continue
     uint8_t cur_prio = get_cur_prio();
-    tcb_t* task_to_switch = runqueue_remove(cur_prio);
+    uint8_t top_prio = highest_prio();
+    if (cur_prio <= top_prio) return;
 
-    // Find next runnable task & add current task back to run_queue
-    uint8_t next_task_prio = highest_prio();
-    runqueue_add(task_to_switch, cur_prio);
-
-    // Context switch
-    cur_tcb = &system_tcb[next_task_prio];
+    // Cotext switch to the highest runnable task
+    tcb_t* task_to_switch = cur_tcb;
+    cur_tcb = &system_tcb[top_prio];
     ctx_switch_full(&(cur_tcb->context), &(task_to_switch->context));
 }
 
@@ -63,10 +63,10 @@ void dispatch_save(void)
  */
 void dispatch_nosave(void)
 {
-    // Find next runnable task
+    // Find the first runnable task
     uint8_t next_task_prio = highest_prio();
     cur_tcb = &system_tcb[next_task_prio];
-
+    
     ctx_switch_half(&(cur_tcb->context));
 }
 
@@ -78,7 +78,9 @@ void dispatch_nosave(void)
  */
 void dispatch_sleep(void)
 {
-	tcb_t* task_to_switch = get_cur_tcb();
+    // Remove current task from run_queue
+    uint8_t cur_prio = get_cur_prio();
+	tcb_t* task_to_switch = runqueue_remove(cur_prio);
 
     // Find next runnable task
     uint8_t next_task_prio = highest_prio();

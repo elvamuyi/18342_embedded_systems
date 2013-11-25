@@ -2,15 +2,14 @@
  * 
  * @brief Run queue maintainence routines.
  *
- * @author Kartik Subramanian <ksubrama@andrew.cmu.edu>
- * @date 2008-11-21
+ * @author Alvin Zheng <dongxuez@andrew.cmu.edu>
+ *         Minghao Wang <minghaow@andrew.cmu.edu>
+ *         Yining Yang <yiningy@andrew.cmu.edu>
+ * @date   21 Nov, 2013 16:09
  */
 
 #include <types.h>
-#include <assert.h>
-#include <config.h>
 
-#include <kernel.h>
 #include <sched.h>
 #include "sched_i.h"
 
@@ -74,14 +73,11 @@ void runqueue_init(void)
  */
 void runqueue_add(tcb_t* tcb __attribute__((unused)), uint8_t prio __attribute__((unused)))
 {
-    if (prio >= OS_MAX_TASKS || tcb == NULL || run_list[prio] != NULL)
-        return;
-
     // Set the corresponding run_bits and group_run_bits
     uint8_t bitNum = prio & 0x7;
     uint8_t groupNum = prio >> 3;
-    run_bits[groupNum] |= 1 << bitNum;
-    group_run_bits |= 1 << groupNum;
+    run_bits[groupNum] |= (1 << bitNum);
+    group_run_bits |= (1 << groupNum);
 
     run_list[prio] = tcb;
 }
@@ -95,9 +91,6 @@ void runqueue_add(tcb_t* tcb __attribute__((unused)), uint8_t prio __attribute__
  */
 tcb_t* runqueue_remove(uint8_t prio __attribute__((unused)))
 {
-    if (prio >= OS_MAX_TASKS || run_list[prio] == NULL)
-        return NULL;
-
     // Clear the corresponding run_bits and group_run_bits
     uint8_t bitNum = prio & 0x7;
     uint8_t groupNum = prio >> 3;

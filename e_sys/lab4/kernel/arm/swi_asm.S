@@ -13,20 +13,32 @@
 	.file	"swi_asm.S"
 
 FUNC(swi_wrapper)
-    SUB     sp, sp, #4
+    /* Save user registers */
     STMFD   sp!, {r0-r12, lr}
-    MRS     r2, spsr
-    STR     r2, [sp, #56]
+    MRS     ip, spsr
+    STMFD   sp, {ip, sp, lr}^
+    ADD     sp, sp, #-12
+
+    /* Build SWI handler arguments */
     LDR     r0, [lr, #-4]
     BIC     r0, r0, #0xff000000
-    MOV     r1, sp
-    LDR     ip, =global_data // Load U-Boot global data into r8
+    ADD     r1, sp, #12
+    
+    /* Load U-Boot global data into r8 */
+    LDR     ip, =global_data
     LDR     r8, [ip]
+
+    /* Enter swi_handler in C */
     MOV     lr, pc
-    LDR     pc, =swi_handler // r0 saves the return value
-    LDR     r2, [sp, #56]
-    MSR     spsr, r2
-    ADD     sp, sp, #4  // Pop the obsolete r0
-    LDMFD   sp!, {r1-r12, lr}
+    LDR     pc, =swi_handler
+
+    /* Restore cpsr_usr, sp_usr, lr_usr */
+    LDMFD   sp, {ip, sp, lr}^
+    ADD     sp, sp, #12
+    MSR     spsr, ip
+    
+    /* Pop the obsolete r0 */
     ADD     sp, sp, #4
-    MOVS    pc, lr
+
+    /* Restore user registers */
+    LDMFD   sp!, {r1-r12, pc}^

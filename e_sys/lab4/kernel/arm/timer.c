@@ -11,9 +11,8 @@
 #include <types.h>
 #include <config.h>
 #include <arm/reg.h>
-#include <arm/interrupt.h>
-
 #include <arm/timer.h>
+#include <arm/interrupt.h>
 
 // Elapsed time since kernel boots up in milliseconds
 static size_t timer;

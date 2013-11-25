@@ -1,0 +1,316 @@
+dagger:
+@<@@<@@<@@<@@<@@<@@<@@<@@<@@<@@<@@<@@<@@<@@<@@<@@<@@<@@<@@<@@<@@<@@<@@<@@<@@<@@<@@<@@<@@<@@<@@<@@<@@<@@<@@<@@<@@<@@<@@<@@<@@<@@<
+[repeat]
+
+/*******************************************************************************************************************************/
+
+simple_mutex:
+suces!
+
+/*******************************************************************************************************************************/
+
+cyclone:
+Test begin
+Time now is 10
+Time now is 30
+Time now is 60
+Time now is 100
+Time now is 150
+Time now is 210
+Time now is 280
+Time now is 360
+Time now is 450
+Time now is 550
+Time now is 660
+Time now is 780
+Time now is 910
+Time now is 1050
+Time now is 1200
+Time now is 1360
+Time now is 1530
+Time now is 1710
+Time now is 1900
+Time now is 2100
+Time now is 2310
+Time now is 2530
+Time now is 2760
+Time now is 3000
+Time now is 3250
+Time now is 3510
+Time now is 3780
+Time now is 4060
+Time now is 4350
+Time now is 4650
+Test ends!!
+
+/*******************************************************************************************************************************/
+
+sys_err:
+TEST BEGIN!
+
+1. Test create return EINVAL
+        SUCCESS ****************
+
+2. Test create return EFAULT
+        SUCCESS ****************
+
+3. Mutex Create returns ENOMEM
+        SUCCESS ****************
+
+4. Mutex Unlock return EINVAL
+        SUCCESS ****************
+
+5. Mutex Unlock return EPERM
+        SUCCESS ****************
+
+6. Mutex Lock return EINVAL
+        SUCCESS ****************
+
+7. Mutex Lock return success
+        SUCCESS ****************
+
+8. Mutex Lock return EDEADLOCK
+        SUCCESS ****************
+
+9. Mutex Unlock return success
+        SUCCESS ****************
+
+10. Event Wait return EINVAL
+        SUCCESS ****************
+
+TEST END!
+
+/*******************************************************************************************************************************/
+
+mutex_chaser:
+TEST STARTING...
+Successfully created all the mutexes!!
+Yes!
+
+1>>mutex 1
+2>>mutex 1
+3>>mutex 1
+4>>mutex 1
+1>>mutex 2
+1>>mutex 3
+2>>mutex 2
+1>>mutex 4
+1>>mutex 5
+2>>mutex 3
+3>>mutex 2
+1>>mutex 6
+1>>mutex 7
+2>>mutex 4
+1>>mutex 8
+1>>mutex 9
+2>>mutex 5
+3>>mutex 3
+1>>mutex 10
+1>>mutex 11
+2>>mutex 6
+4>>mutex 2
+1>>mutex 12
+1>>mutex 13
+2>>mutex 7
+3>>mutex 4
+1>>mutex 14
+1>>mutex 15
+2>>mutex 8
+1>>mutex 16
+1>>mutex 17
+2>>mutex 9
+3>>mutex 5
+1>>mutex 18
+1>>mutex 19
+2>>mutex 10
+1>>mutex 20
+1>>mutex 21
+2>>mutex 11
+3>>mutex 6
+4>>mutex 3
+1>>mutex 22
+1>>mutex 23
+2>>mutex 12
+1>>mutex 24
+1>>mutex 25
+2>>mutex 13
+3>>mutex 7
+1>>mutex 26
+1>>mutex 27
+2>>mutex 14
+1>>mutex 28
+1>>mutex 29
+2>>mutex 15
+3>>mutex 8
+1>>mutex 30
+1>>mutex 31
+2>>mutex 16
+4>>mutex 4
+2>>mutex 17
+3>>mutex 9
+2>>mutex 18
+2>>mutex 19
+3>>mutex 10
+2>>mutex 20
+2>>mutex 21
+3>>mutex 11
+4>>mutex 5
+2>>mutex 22
+2>>mutex 23
+3>>mutex 12
+2>>mutex 24
+2>>mutex 25
+3>>mutex 13
+2>>mutex 26
+4>>mutex 6
+2>>mutex 27
+3>>mutex 14
+2>>mutex 28
+2>>mutex 29
+3>>mutex 15
+2>>mutex 30
+2>>mutex 31
+3>>mutex 16
+4>>mutex 7
+3>>mutex 17
+3>>mutex 18
+4>>mutex 8
+3>>mutex 19
+3>>mutex 20
+3>>mutex 21
+4>>mutex 9
+3>>mutex 22
+3>>mutex 23
+4>>mutex 10
+3>>mutex 24
+3>>mutex 25
+3>>mutex 26
+4>>mutex 11
+3>>mutex 27
+3>>mutex 28
+4>>mutex 12
+3>>mutex 29
+3>>mutex 30
+3>>mutex 31
+4>>mutex 13
+4>>mutex 14
+4>>mutex 15
+4>>mutex 16
+4>>mutex 17
+4>>mutex 18
+4>>mutex 19
+4>>mutex 20
+4>>mutex 21
+4>>mutex 22
+4>>mutex 23
+4>>mutex 24
+4>>mutex 25
+4>>mutex 26
+4>>mutex 27
+4>>mutex 28
+4>>mutex 29
+4>>mutex 30
+4>>mutex 31
+Final mutex0 value 2 == result value 624
+No!
+
+Final mutex1 value 624 == result value 624
+Yes!
+
+Final mutex2 value 624 == result value 624
+Yes!
+
+Final mutex3 value 624 == result value 624
+Yes!
+
+Final mutex4 value 624 == result value 624
+Yes!
+
+Final mutex5 value 624 == result value 624
+Yes!
+
+Final mutex6 value 624 == result value 624
+Yes!
+
+Final mutex7 value 624 == result value 624
+Yes!
+
+Final mutex8 value 624 == result value 624
+Yes!
+
+Final mutex9 value 624 == result value 624
+Yes!
+
+Final mutex10 value 624 == result value 624
+Yes!
+
+Final mutex11 value 624 == result value 624
+Yes!
+
+Final mutex12 value 624 == result value 624
+Yes!
+
+Final mutex13 value 624 == result value 624
+Yes!
+
+Final mutex14 value 624 == result value 624
+Yes!
+
+Final mutex15 value 624 == result value 624
+Yes!
+
+Final mutex16 value 624 == result value 624
+Yes!
+
+Final mutex17 value 624 == result value 624
+Yes!
+
+Final mutex18 value 624 == result value 624
+Yes!
+
+Final mutex19 value 624 == result value 624
+Yes!
+
+Final mutex20 value 624 == result value 624
+Yes!
+
+Final mutex21 value 624 == result value 624
+Yes!
+
+Final mutex22 value 624 == result value 624
+Yes!
+
+Final mutex23 value 624 == result value 624
+Yes!
+
+Final mutex24 value 624 == result value 624
+Yes!
+
+Final mutex25 value 624 == result value 624
+Yes!
+
+Final mutex26 value 624 == result value 624
+Yes!
+
+Final mutex27 value 624 == result value 624
+Yes!
+
+Final mutex28 value 624 == result value 624
+Yes!
+
+Final mutex29 value 624 == result value 624
+Yes!
+
+Final mutex30 value 624 == result value 624
+Yes!
+
+Final mutex31 value 624 == result value 624
+Yes!
+
+TEST PASSED SUCCESSFULLY!
+
+/*******************************************************************************************************************************/
+
+stress:
+
+*********** Test PASEED *******************

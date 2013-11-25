@@ -9,7 +9,6 @@
  */
 
 #include <types.h>
-#include <assert.h>
 #include <arm/physmem.h>
 
 /**
@@ -19,6 +18,7 @@
  * Argumnet:
  *  - uint32_t odl_ins[]: Original handler's instructions
  *  - int IRQ_flag: 0 for SWI Handler, others for IRQ Handler
+ *  - void* handler: SWI handler or IRQ handler pointer
  * Return:
  *  - uint32_t* oldPos: Original handler's address
  */
@@ -38,10 +38,7 @@ uint32_t* install_handler(uint32_t old_ins[], int IRQ_flag, void* handler)
     else if (ldr_pc == 0xe51ff000)
         jmp_table = (uint32_t *)((uint32_t) vector + 0x8 - offset);
     // Unrecognized instuction
-    else {
-        panic("Unrecognized vector\n");
-        return NULL;
-    }
+    else return NULL;
     
     // Extract the addr of SWI/IRQ Handler
     uint32_t *oldPos = (uint32_t *) *jmp_table;

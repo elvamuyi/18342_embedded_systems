@@ -9,8 +9,14 @@
 #include <asm.h>
 #include <bits/swi.h>
 
-	.file "task_create.S"
+    .file "task_create.S"
 
 FUNC(task_create)
-    swi CREATE_SWI
-    mov pc, lr
+    stmfd	sp!, {r1-r2}
+	swi     CREATE_SWI
+	ldr     r1, =errno
+	rsbs	r2, r0, #0
+	strgt	r2, [r1]
+	movgt	r0, #-1
+	ldmfd	sp!, {r1-r2}
+	mov     pc, lr

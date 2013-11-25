@@ -2,11 +2,10 @@
  * 
  * @brief Implementation of `process' syscalls
  *
- * @author Mike Kasick <mkasick@andrew.cmu.edu>
- * @date   Sun, 14 Oct 2007 00:07:38 -0400
- *
- * @author Kartik Subramanian <ksubrama@andrew.cmu.edu>
- * @date 2008-11-12
+ * @author Alvin Zheng <dongxuez@andrew.cmu.edu>
+ *         Minghao Wang <minghaow@andrew.cmu.edu>
+ *         Yining Yang <yiningy@andrew.cmu.edu>
+ * @date   21 Nov, 2013 16:09
  */
 
 #include <sched.h>
@@ -19,38 +18,45 @@
 #include <bits/errno.h>
 #include <arm/reg.h>
 #include <arm/psr.h>
-#include <arm/physmem.h>
 #include <arm/exception.h>
 
 int task_create(task_t* tasks __attribute__((unused)), size_t num_tasks __attribute__((unused)))
 {
     size_t i, j;
-    task_t* temp; 
-    task_t* ordered_tasks[num_tasks];
-    for (i = 0; i < num_tasks; i++)
-        ordered_tasks[i] = &tasks[i];
+    task_t temp;
 
-    // TODO: Filter non-schedulable user tasks
+    // Verify tasks
+    if (num_tasks >= OS_AVAIL_TASKS)
+        return -EINVAL;
+    else if (!valid_addr(tasks, sizeof(task_t) * num_tasks,
+                    USR_START_ADDR, USR_END_ADDR))
+            return -EFAULT;
+    for (i = 0; i < num_tasks; i++)
+        if (tasks[i].C > tasks[i].T)
+            return -ESCHED;
 
     // Sort tasks in ascending order
     for (i = 0; i < num_tasks; i++) {
         for (j = i + 1; j < num_tasks; j++) {
-            if ((*ordered_tasks[i]).T > (*ordered_tasks[j]).T) {
-                temp = ordered_tasks[i];
-                ordered_tasks[i] = ordered_tasks[j];
-                ordered_tasks[j] = temp;
+            if (tasks[i].T > tasks[j].T) {
+                temp = tasks[i];
+                tasks[i] = tasks[j];
+                tasks[j] = temp;
             }
         }
     }
 
-    allocate_tasks(ordered_tasks, num_tasks);
-    return 1;
+    allocate_tasks(&tasks, num_tasks);
+    return 0;
 }
 
 int event_wait(uint32_t dev __attribute__((unused)))
 {
+    if (dev >= NUM_DEVICES)
+        return -EINVAL;
+
     dev_wait(dev);
-    return 1;
+    return 0;
 }
 
 /* An invalid syscall causes the kernel to exit. */

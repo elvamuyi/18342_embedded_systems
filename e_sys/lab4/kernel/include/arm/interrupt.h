@@ -55,14 +55,15 @@
 
 #ifndef ASSEMBLER
 
-//void interrupt_panic(unsigned int int_num) __attribute__((noreturn));
+void interrupt_panic(unsigned int int_num) __attribute__((noreturn));
 void init_interrupt(void);
 void destroy_interrupt(void);
 void irq_handler(void);
-extern int IRQ_Handler(void);
-//void request_reschedule(void);
-//void install_int_handler(unsigned int int_num, void (*int_handler)(unsigned int))
-//	__attribute__((nonnull));
+extern void irq_wrapper(void);
+extern unsigned* install_handler(unsigned [], int, void*);
+void request_reschedule(void);
+void install_int_handler(unsigned int int_num, void (*int_handler)(unsigned int))
+	__attribute__((nonnull));
 
 #endif /* ASSEMBLER */
 

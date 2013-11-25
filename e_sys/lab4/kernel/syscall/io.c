@@ -17,7 +17,6 @@
 #include <bits/fileno.h>
 #include <arm/physmem.h>
 
-
 #define EOT_CHAR 0x04
 #define DEL_CHAR 0x7f
 

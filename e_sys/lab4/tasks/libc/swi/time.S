@@ -11,8 +11,8 @@
 #include <asm.h>
 #include <bits/swi.h>
 
-	.file "time.S"
+    .file "time.S"
 
 FUNC(time)
-	swi	TIME_SWI
-	mov	pc, lr
+	swi     TIME_SWI
+	mov     pc, lr

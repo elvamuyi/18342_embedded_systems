@@ -1,33 +1,26 @@
-/** @file  Call_UserApp.S
+/** @file  user_mode.S
  *
  * @brief  Call user application from kernel (Assembly half)
- *          - Switch to user mode with IRQ & FIQ masked
- *          - Setup a full descending user mode stack
+ *          - Switch to user mode with FIQ masked
  *          - Jump to a loaded user program
  *
  * @author Alvin Zheng <dongxuez@andrew.cmu.edu>
  *         Minghao Wang <minghaow@andrew.cmu.edu>
  *         Yining Yang <yiningy@andrew.cmu.edu>
- * @date   Tue, 29 Oct 2013 16:09
+ * @date   21 Nov, 2013 16:09
  */
 
 #include <asm.h>
 #include <config.h>
-#include <bits/swi.h>
+#include <arm/psr.h>
 
 	.file	"user_mode.S"
 
 FUNC(enter_user_mode)
-    STMFD   sp!, {r1-r12, lr}
-    // Save kernel stack ptr into global variable
-    LDR     ip, =kStackPtr
-    STR     sp, [ip]
-    // Initialize sp_irq
-    MSR     cpsr_c, #0xd2
-    MOV     sp, r2
-    // Transfer to user mode
-    MSR     cpsr_c, #0x50
-    MOV     sp, r1
+    /* Transfer to user mode */
+    MSR     cpsr_c, #(PSR_MODE_USR | PSR_FIQ)
+    LDR     sp, =USR_STACK
+    MOV     r0, #0
+    MOV     r1, sp
     MOV     lr, pc
-    LDR     pc, =USR_START_ADDR
-    SWI     EXIT_SWI
+    LDR     pc, =LOAD_ADDR

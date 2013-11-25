@@ -11,14 +11,14 @@
 #include <asm.h>
 #include <bits/swi.h>
 
-	.file "read.S"
+    .file "read.S"
 
 FUNC(read)
 	stmfd	sp!, {r1-r2}
-	swi	READ_SWI
-	ldr	r1, =errno
+	swi     READ_SWI
+	ldr     r1, =errno
 	rsbs	r2, r0, #0
 	strgt	r2, [r1]
 	movgt	r0, #-1
 	ldmfd	sp!, {r1-r2}
-	mov	pc, lr
+	mov     pc, lr

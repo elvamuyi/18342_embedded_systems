@@ -14,7 +14,6 @@
 
 #define SWI_BASE 0x900000
 
-#define EXIT_SWI  (SWI_BASE + 1)
 #define READ_SWI  (SWI_BASE + 3)
 #define WRITE_SWI (SWI_BASE + 4)
 

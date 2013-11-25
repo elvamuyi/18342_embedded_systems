@@ -11,8 +11,8 @@
 #include <asm.h>
 #include <bits/swi.h>
 
-	.file "sleep.S"
+    .file "sleep.S"
 
 FUNC(sleep)
-	swi	SLEEP_SWI
-	mov	pc, lr
+	swi     SLEEP_SWI
+	mov     pc, lr

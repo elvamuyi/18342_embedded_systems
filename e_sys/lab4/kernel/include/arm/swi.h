@@ -17,6 +17,7 @@ void init_swi(void);
 void destroy_swi(void);
 void swi_handler(unsigned, unsigned *);
 extern void swi_wrapper(void);
+extern unsigned* install_handler(unsigned [], int, void*);
 
 #endif /* ASSEMBLER */
 

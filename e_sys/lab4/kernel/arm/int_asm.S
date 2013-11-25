@@ -36,7 +36,7 @@ FUNC(irq_wrapper)
 	 * We need to diq spsr because we need atomic reload of pc and cpsr
 	 * during the return sequence in case we came in from user mode.
 	 */
-	msr      spsr, r0
+	msr      spsr, r0 /* Move spsr_irq to spsr_svc */
 
 	/* Save lr, pop of r0, r1 from irq stack, and then put them all on the 
 	 * svc stack along with other caller-save registers.
