@@ -40,9 +40,7 @@
 
 void init_timer(void);
 void destroy_timer(void);
-void timer_handler(unsigned int int_num);
-void addTimer(void);
-unsigned long get_ticks(void);
+void timer_handler(void);
 unsigned long get_millis(void);
 
 #endif /* ASSEMBLER */

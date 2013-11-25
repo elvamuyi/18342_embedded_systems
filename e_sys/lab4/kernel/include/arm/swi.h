@@ -15,7 +15,8 @@
 
 void init_swi(void);
 void destroy_swi(void);
-void swi_dispatch(unsigned int swi_num, struct ex_context* c);
+void swi_handler(unsigned, unsigned *);
+extern void swi_wrapper(void);
 
 #endif /* ASSEMBLER */
 

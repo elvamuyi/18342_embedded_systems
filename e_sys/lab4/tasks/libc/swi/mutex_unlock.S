@@ -7,8 +7,10 @@
  */
 
 #include <asm.h>
+#include <bits/swi.h>
 
 	.file "mutex_unlock.S"
 
 FUNC(mutex_unlock)
-	@ Add code here.  Put your name at the top.
+    swi MUTEX_UNLOCK
+    mov pc, lr

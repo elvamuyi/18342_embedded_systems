@@ -53,6 +53,8 @@ typedef uint32_t            uintptr_t;
 
 /* --- Sizes --- */
 
+#define NULL    ((void *) 0)
+
 #define UINT8_MAX     0xff
 #define UINT16_MAX    0xffff
 #define UINT32_MAX    0xffffffff

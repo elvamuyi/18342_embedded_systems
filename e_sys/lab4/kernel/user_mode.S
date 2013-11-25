@@ -15,9 +15,9 @@
 #include <config.h>
 #include <bits/swi.h>
 
-	.file	"Call_UserApp.S"
+	.file	"user_mode.S"
 
-FUNC(Call_UserApp)
+FUNC(enter_user_mode)
     STMFD   sp!, {r1-r12, lr}
     // Save kernel stack ptr into global variable
     LDR     ip, =kStackPtr

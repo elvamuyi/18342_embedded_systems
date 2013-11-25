@@ -50,17 +50,15 @@ void destroy_timer(void)
 }
 
 /**
- * void addTimer(void)
+ * void timer_handler(void)
  *  - Increase the timer value every time the IRQ time match is executed
  *  - Clear the INT and reset OSCR for the next cycle
  */
-void addTimer(void)
+void timer_handler(void)
 {
-    if (reg_read(INT_ICIP_ADDR) & 0x4000000) {
-        timer++;
-        reg_set(OSTMR_OSSR_ADDR, 0x1);
-        reg_write(OSTMR_OSCR_ADDR, 0x0);
-    }
+    timer++;
+    reg_set(OSTMR_OSSR_ADDR, 0x1);
+    reg_write(OSTMR_OSCR_ADDR, 0x0);
 }
 
 /**
@@ -73,9 +71,4 @@ void addTimer(void)
 size_t get_millis(void)
 {
     return timer * OS_TIMER_RESOLUTION;
-}
-
-size_t get_ticks(void)
-{
-    return timer;
 }

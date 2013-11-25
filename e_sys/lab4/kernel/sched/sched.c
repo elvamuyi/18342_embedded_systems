@@ -15,24 +15,18 @@
 
 #include <arm/reg.h>
 #include <arm/psr.h>
-#include <arm/exception.h>
 #include <arm/physmem.h>
+#include <arm/exception.h>
 
-tcb_t system_tcb[OS_MAX_TASKS]; /*allocate memory for system TCBs */
-
-void sched_init(task_t* main_task  __attribute__((unused)))
-{
-	
-}
+tcb_t system_tcb[OS_MAX_TASKS]; /* Allocate memory for system TCBs */
 
 /**
  * @brief This is the idle task that the system runs when no other task is runnable
  */
- 
 static void __attribute__((unused)) idle(void)
 {
-	 enable_interrupts();
-	 while(1);
+    enable_interrupts();
+    while(1);
 }
 
 /**
@@ -48,8 +42,45 @@ static void __attribute__((unused)) idle(void)
  * @param tasks  A list of scheduled task descriptors.
  * @param size   The number of tasks is the list.
  */
-void allocate_tasks(task_t** tasks  __attribute__((unused)), size_t num_tasks  __attribute__((unused)))
+void allocate_tasks(task_t** tasks __attribute__((unused)), size_t num_tasks __attribute__((unused)))
 {
-	
+    if (num_tasks >= OS_AVAIL_TASKS || tasks == NULL)
+        return;
+
+    runqueue_init();
+
+    // Reserve priority 0
+    uint8_t prio;
+    size_t i_task;
+    for (prio = 1, i_task = 0; i_task < num_tasks; i_task++) {
+        system_tcb[prio].native_prio = prio;
+        system_tcb[prio].cur_prio = prio;
+        system_tcb[prio].context.r4 = (uint32_t) tasks[i_task]->lambda;
+        system_tcb[prio].context.r5 = (uint32_t) tasks[i_task]->data;
+        system_tcb[prio].context.r6 = (uint32_t) tasks[i_task]->stack_pos;
+        system_tcb[prio].context.lr = launch_task;
+        system_tcb[prio].context.sp = system_tcb[prio].kstack_high;
+        system_tcb[prio].holds_lock = 0;
+        system_tcb[prio].sleep_queue = NULL;
+        runqueue_add(&system_tcb[prio], prio);
+    }
+
+    sched_init(NULL);
 }
 
+void sched_init(task_t* main_task __attribute__((unused)))
+{
+    // Idle task initialization
+    system_tcb[IDLE_PRIO].native_prio = IDLE_PRIO;
+    system_tcb[IDLE_PRIO].cur_prio = IDLE_PRIO;
+    system_tcb[IDLE_PRIO].context.r4 = (uint32_t) idle;
+    system_tcb[IDLE_PRIO].context.r5 = 0x0;
+    system_tcb[IDLE_PRIO].context.r6 = USR_END_ADDR;
+    system_tcb[IDLE_PRIO].context.lr = launch_task;
+    system_tcb[IDLE_PRIO].context.sp = system_tcb[IDLE_PRIO].kstack_high;
+    system_tcb[IDLE_PRIO].holds_lock = 0;
+    system_tcb[IDLE_PRIO].sleep_queue = NULL;
+    runqueue_add(&system_tcb[IDLE_PRIO], IDLE_PRIO);
+
+    dispatch_init(&system_tcb[IDLE_PRIO]);
+}

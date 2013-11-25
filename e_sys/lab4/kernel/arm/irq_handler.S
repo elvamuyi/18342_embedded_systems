@@ -15,7 +15,7 @@
 FUNC(IRQ_Handler)
     STMFD   sp!, {r0-r12, lr}
     MOV     lr, pc
-    LDR     pc, =addTimer
+    LDR     pc, =irq_handler
     LDMFD   sp!, {r0-r12, lr}
     SUB     lr, lr, #4
     MOVS    pc, lr

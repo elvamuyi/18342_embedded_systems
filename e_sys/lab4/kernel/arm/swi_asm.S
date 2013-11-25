@@ -10,9 +10,9 @@
 
 #include <asm.h>
 
-	.file	"SWI_Handler.S"
+	.file	"swi_asm.S"
 
-FUNC(SWI_Handler)
+FUNC(swi_wrapper)
     SUB     sp, sp, #4
     STMFD   sp!, {r0-r12, lr}
     MRS     r2, spsr
@@ -23,7 +23,7 @@ FUNC(SWI_Handler)
     LDR     ip, =global_data // Load U-Boot global data into r8
     LDR     r8, [ip]
     MOV     lr, pc
-    LDR     pc, =C_SWI_Handler // r0 saves the return value
+    LDR     pc, =swi_handler // r0 saves the return value
     LDR     r2, [sp, #56]
     MSR     spsr, r2
     ADD     sp, sp, #4  // Pop the obsolete r0

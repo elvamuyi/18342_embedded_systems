@@ -45,8 +45,11 @@ static dev_t devices[NUM_DEVICES];
  */
 void dev_init(void)
 {
-   /* the following line is to get rid of the warning and should not be needed */	
-   devices[0]=devices[0];
+    int i;
+    for (i = 0; i < NUM_DEVICES; i++) {
+        devices[i].sleep_queue = NULL;
+        devices[i].next_match = dev_freq[i];
+    }
 }
 
 /**
@@ -57,7 +60,16 @@ void dev_init(void)
  */
 void dev_wait(unsigned dev __attribute__((unused)))
 {
-	
+	// Remove from run queue
+    tcb_t* task_to_sleep = runqueue_remove(get_cur_prio());
+
+    // Add to sleep queue
+    tcb_t* top = devices[dev].sleep_queue;
+    devices[dev].sleep_queue = task_to_sleep;
+    task_to_sleep->sleep_queue = top;
+
+    // Context switch
+    dispatch_sleep();
 }
 
 /**
@@ -69,5 +81,27 @@ void dev_wait(unsigned dev __attribute__((unused)))
  */
 void dev_update(size_t millis __attribute__((unused)))
 {
-	
+	// Find out current device & update next_match
+    int cur_dev;
+    tcb_t *sq_ptr1, *sq_ptr2;
+    for (cur_dev = 0; cur_dev < NUM_DEVICES; cur_dev++) {
+        if (devices[cur_dev].next_match != millis)
+            continue;
+
+        // Update the device timer
+        devices[cur_dev].next_match += dev_freq[cur_dev];
+
+        // Remove from sleep_queue & add to run_queue
+        sq_ptr1 = devices[cur_dev].sleep_queue;
+        while (sq_ptr1 != NULL) {
+            // Get next sleep task
+            sq_ptr2 = sq_ptr1;
+            sq_ptr1 = sq_ptr1->sleep_queue;
+            // Remove from sleep_queue
+            sq_ptr2->sleep_queue = NULL;
+            // Add to the run_queue
+            runqueue_add(sq_ptr2, sq_ptr2->cur_prio);
+        }
+        devices[cur_dev].sleep_queue = NULL;
+    }
 }

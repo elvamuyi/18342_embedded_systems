@@ -25,8 +25,8 @@ FUNC(irq_wrapper)
 	stmfd    sp!, {r0,r1}
 
 	/* Move special regs into r0, r1. */
-	mrs      r0, spsr
-	mov      r1, lr
+	mrs      r0, spsr /* User task cpsr */
+	mov      r1, lr   /* User task return addr */
 
 	/* Switch to supervisor mode */
 	msr      cpsr_c, #(PSR_MODE_SVC | PSR_IRQ)
@@ -46,11 +46,11 @@ FUNC(irq_wrapper)
 	stmfd    sp!, {r1}
 	ldr      r1, =irq_stack_lo
 	ldm      r1, {r0, r1}
-	stmfd    sp!, {r0-r3, r8, ip, lr}
+	stmfd    sp!, {r0-r3, r8, ip, lr}   /* lr_svc */
 
 	/* Recover user registers and save */
 	mrs      r0, spsr
-	stmfd    sp, {r0, sp, lr}^
+	stmfd    sp, {r0, sp, lr}^  /* cpsr_usr, sp_usr, lr_usr */
 	add      sp, sp, #-12
 
 	/* Set up r8 correctly with u-boot dispatch table. */
