@@ -31,9 +31,6 @@ public class MessagePasser {
 	private HashMap<String, ObjectOutputStream> connections;
 	private boolean isClose;
 
-	public ArrayList<Rule> getReveiveRules() {
-		return this.receiveRules;
-	}
 	public MessagePasser(String configuration_filename, String local_name) throws FileNotFoundException {
 		configFile = configuration_filename;
 		configFileP = new File(configFile);
@@ -113,59 +110,54 @@ public class MessagePasser {
 		if(GParameters.isTest) {		
 			System.out.println("----Parse sendRules----");
 		}
-		if(send != null) {
-			for(Map<String, Object>  sendRule: send ) {			
-				Rule rule = null;
-				if(sendRule.get("action") != null) 
-					rule = new Rule((String) sendRule.get("action"));
-				if(sendRule.get("src") != null)
-					rule.setSrc((String) sendRule.get("src"));
-				if(sendRule.get("dest") != null)
-					rule.setDest((String) sendRule.get("dest"));
-				if(sendRule.get("kind") != null)
-					rule.setKind((String) sendRule.get("kind"));
-				if(sendRule.get("seqNum") != null)
-					rule.setSeqNum((Integer) sendRule.get("seqNum"));
-				if(sendRule.get("Duplicate") != null)
-					rule.setDup((Boolean) sendRule.get("Duplicate"));
-				sendRules.add(rule);
-			}
+		for(Map<String, Object>  sendRule: send ) {			
+			Rule rule = null;
+			if(sendRule.get("action") != null) 
+				rule = new Rule((String) sendRule.get("action"));
+			if(sendRule.get("src") != null)
+				rule.setSrc((String) sendRule.get("src"));
+			if(sendRule.get("dest") != null)
+				rule.setDest((String) sendRule.get("dest"));
+			if(sendRule.get("kind") != null)
+				rule.setKind((String) sendRule.get("kind"));
+			if(sendRule.get("seqNum") != null)
+				rule.setSeqNum((Integer) sendRule.get("seqNum"));
+			if(sendRule.get("Duplicate") != null)
+				rule.setDup((Boolean) sendRule.get("Duplicate"));
+			sendRules.add(rule);
 		}
 		// Parse receive rules part 		
 		// For test
 		if(GParameters.isTest) {
 			System.out.println("----Parse receiveRules----");
 		}
-		if(receive != null) {
+		for(Map<String, Object>  receiveRule: receive ) {
 
-			for(Map<String, Object>  receiveRule: receive ) {
-
-				Rule rule = null;
-				if(receiveRule.get("action") != null) 
-					rule = new Rule((String) receiveRule.get("action"));
-				if(receiveRule.get("src") != null)
-					rule.setSrc((String) receiveRule.get("src"));
-				if(receiveRule.get("dest") != null)
-					rule.setDest((String) receiveRule.get("dest"));
-				if(receiveRule.get("kind") != null)
-					rule.setKind((String) receiveRule.get("kind"));
-				if(receiveRule.get("seqNum") != null)
-					rule.setSeqNum((Integer) receiveRule.get("seqNum"));
-				if(receiveRule.get("Duplicate") != null)
-					rule.setDup((Boolean) receiveRule.get("Duplicate"));
-				receiveRules.add(rule);
-			}
+			Rule rule = null;
+			if(receiveRule.get("action") != null) 
+				rule = new Rule((String) receiveRule.get("action"));
+			if(receiveRule.get("src") != null)
+				rule.setSrc((String) receiveRule.get("src"));
+			if(receiveRule.get("dest") != null)
+				rule.setDest((String) receiveRule.get("dest"));
+			if(receiveRule.get("kind") != null)
+				rule.setKind((String) receiveRule.get("kind"));
+			if(receiveRule.get("seqNum") != null)
+				rule.setSeqNum((Integer) receiveRule.get("seqNum"));
+			if(receiveRule.get("Duplicate") != null)
+				rule.setDup((Boolean) receiveRule.get("Duplicate"));
+			receiveRules.add(rule);
 		}
 	}
 
 	public boolean getCloseFlag() {
 		return this.isClose;
 	}
-
+	
 	public void closeServer() {
 		this.isClose = true;
 	}
-
+	
 	public void send(Message msg) throws FileNotFoundException {
 
 		// Parse the configuration file again
@@ -173,25 +165,20 @@ public class MessagePasser {
 			if(GParameters.isTest) {
 				System.out.println("Parse the configuration file again.");
 			}
-			this.hosts.clear();
-			this.sendRules.clear();
-			this.receiveRules.clear();
-			this.connections.clear();
 			parseConfig(configFile);
 			timeStamp = configFileP.lastModified();
 		}
-
+		
 		msg.setSrc(this.localName);
 		msg.setSeqNum(this.curNum++);
 		Rule curRule = checkRule(true, msg);
-
 		// Find the rule that matches the message
 		if(curRule != null) {
-
+			
 			if(GParameters.isTest) {
 				System.out.println("Find a match rule.");
 			}
-
+			
 			String action = curRule.getAction();
 			if(action.equals("drop")) {
 				// Do nothing
@@ -238,13 +225,9 @@ public class MessagePasser {
 		}
 		// Not find matched rule
 		else {
-
-			sendBuffer.add(msg);
-			while(!delaySendBuffer.isEmpty()) {
-				Message tmp = delaySendBuffer.poll();
-				sendBuffer.add(tmp);
+			if(GParameters.isTest) {
+				System.out.println("Not find a match rule.");
 			}
-			sendMsg(sendBuffer);
 		}
 	}
 
@@ -256,7 +239,7 @@ public class MessagePasser {
 		Socket curSkt = null;
 		String msgDest = null;
 		while(!sendBuffer.isEmpty()) {
-			Message msg = sendBuffer.poll();
+		  Message msg = sendBuffer.poll();
 			msgDest = msg.getDest();
 			oos = this.getConnections().get(msgDest);
 			// if not cached, set up the socket and cache it
