@@ -1,0 +1,333 @@
+/**
+ * MessagePasser Class
+ * 
+ */
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+import org.yaml.snakeyaml.Yaml;
+
+public class MessagePasser {
+
+	private String configFile;
+	private File configFileP;
+	private long timeStamp;
+	private String localName;
+	private int curNum;
+	private ConcurrentLinkedQueue<Message> receiveBuffer;
+	private ConcurrentLinkedQueue<Message> delayReceiveBuffer;
+	private ConcurrentLinkedQueue<Message> sendBuffer;
+	private ConcurrentLinkedQueue<Message> delaySendBuffer;
+	private HashMap<String, Host> hosts;
+	private ArrayList<Rule> sendRules;
+	private ArrayList<Rule> receiveRules;
+	private HashMap<String, ObjectOutputStream> connections;
+	private boolean isClose;
+
+	public ArrayList<Rule> getReveiveRules() {
+		return this.receiveRules;
+	}
+	public MessagePasser(String configuration_filename, String local_name) throws FileNotFoundException {
+		configFile = configuration_filename;
+		configFileP = new File(configFile);
+		timeStamp = configFileP.lastModified();
+		localName = local_name;
+		curNum = 1;
+		receiveBuffer = new ConcurrentLinkedQueue<Message>();
+		delayReceiveBuffer = new ConcurrentLinkedQueue<Message>();
+		sendBuffer = new ConcurrentLinkedQueue<Message>();
+		delaySendBuffer = new ConcurrentLinkedQueue<Message>();
+		hosts = new HashMap<String, Host>();
+		sendRules = new ArrayList<Rule>();
+		receiveRules = new ArrayList<Rule>();
+		connections = new HashMap<String, ObjectOutputStream>();
+		isClose = false;
+
+		parseConfig(configFile);
+		setSockets();
+	}
+	public HashMap<String, ObjectOutputStream> getConnections() {
+		return this.connections;
+	}
+	public ConcurrentLinkedQueue<Message> getReceiveBuffer() {
+		return this.receiveBuffer;
+	}
+	public ConcurrentLinkedQueue<Message> getDelayReceiveBuffer() {
+		return this.delayReceiveBuffer;
+	}
+	public ConcurrentLinkedQueue<Message> getSendBuffer() {
+		return this.sendBuffer;
+	}
+	public ConcurrentLinkedQueue<Message> getDelaySendBuffer() {
+		return this.delaySendBuffer;
+	}
+	public String getLocalName() {
+		return this.localName;
+	}
+
+	public HashMap<String, Host> getHosts() {
+		return this.hosts;
+	}
+
+	private void setSockets() {
+
+		Thread cur = new Thread(new Server(this));
+		cur.start();
+		// For test
+		if(GParameters.isTest) {
+			System.out.println(this.localName + " is on!");
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private void parseConfig(String configFile) throws FileNotFoundException {
+
+		Yaml yaml = new Yaml();
+		Map<String, ArrayList<HashMap<String, Object>>> values = 
+				(Map<String, ArrayList<HashMap<String, Object>>> ) 
+				yaml.load(new FileInputStream(new File(configFile)));
+		ArrayList<HashMap<String, Object>> config = values.get("configuration");
+		ArrayList<HashMap<String, Object>> send = values.get("sendRules");
+		ArrayList<HashMap<String, Object>> receive = values.get("receiveRules");
+		// Parse configuration part 
+		// For test
+		if(GParameters.isTest) { 
+			System.out.println("----Parse configuration----");
+		}
+		for(Map<String, Object> host: config ) {
+
+			String name = (String) host.get("name");
+			String ip = (String) host.get("ip");
+			int port = (Integer) host.get("port");
+			hosts.put(name, new Host(name, ip, port));
+		}
+		// Parse send rules part 		
+		// For test
+		if(GParameters.isTest) {		
+			System.out.println("----Parse sendRules----");
+		}
+		if(send != null) {
+			for(Map<String, Object>  sendRule: send ) {			
+				Rule rule = null;
+				if(sendRule.get("action") != null) 
+					rule = new Rule((String) sendRule.get("action"));
+				if(sendRule.get("src") != null)
+					rule.setSrc((String) sendRule.get("src"));
+				if(sendRule.get("dest") != null)
+					rule.setDest((String) sendRule.get("dest"));
+				if(sendRule.get("kind") != null)
+					rule.setKind((String) sendRule.get("kind"));
+				if(sendRule.get("seqNum") != null)
+					rule.setSeqNum((Integer) sendRule.get("seqNum"));
+				if(sendRule.get("Duplicate") != null)
+					rule.setDup((Boolean) sendRule.get("Duplicate"));
+				sendRules.add(rule);
+			}
+		}
+		// Parse receive rules part 		
+		// For test
+		if(GParameters.isTest) {
+			System.out.println("----Parse receiveRules----");
+		}
+		if(receive != null) {
+
+			for(Map<String, Object>  receiveRule: receive ) {
+
+				Rule rule = null;
+				if(receiveRule.get("action") != null) 
+					rule = new Rule((String) receiveRule.get("action"));
+				if(receiveRule.get("src") != null)
+					rule.setSrc((String) receiveRule.get("src"));
+				if(receiveRule.get("dest") != null)
+					rule.setDest((String) receiveRule.get("dest"));
+				if(receiveRule.get("kind") != null)
+					rule.setKind((String) receiveRule.get("kind"));
+				if(receiveRule.get("seqNum") != null)
+					rule.setSeqNum((Integer) receiveRule.get("seqNum"));
+				if(receiveRule.get("Duplicate") != null)
+					rule.setDup((Boolean) receiveRule.get("Duplicate"));
+				receiveRules.add(rule);
+			}
+		}
+	}
+
+	public boolean getCloseFlag() {
+		return this.isClose;
+	}
+
+	public void closeServer() {
+		this.isClose = true;
+	}
+
+	public void send(Message msg) throws FileNotFoundException {
+
+		// Parse the configuration file again
+		if(configFileP.lastModified() > timeStamp) {
+			if(GParameters.isTest) {
+				System.out.println("Parse the configuration file again.");
+			}
+			this.hosts.clear();
+			this.sendRules.clear();
+			this.receiveRules.clear();
+			this.connections.clear();
+			parseConfig(configFile);
+			timeStamp = configFileP.lastModified();
+		}
+
+		msg.setSrc(this.localName);
+		msg.setSeqNum(this.curNum++);
+		Rule curRule = checkRule(true, msg);
+
+		// Find the rule that matches the message
+		if(curRule != null) {
+
+			if(GParameters.isTest) {
+				System.out.println("Find a match rule.");
+			}
+
+			String action = curRule.getAction();
+			if(action.equals("drop")) {
+				// Do nothing
+				if(GParameters.isTest) {
+					System.out.println("Drop the message.");
+				}
+				;
+			}
+			else if(action.equals("duplicate")) {
+
+				if(GParameters.isTest) {
+					System.out.println("Duplicate the message.");
+				}
+				sendBuffer.add(msg);
+				Message dup = new Message(msg.getDest(), msg.getKind(), msg.getData());
+				// Here set duplicate field of second message as true
+				dup.setDup(true);
+				dup.setSeqNum(msg.getSeqNum());
+				dup.setSrc(msg.getSrc());
+				sendBuffer.add(dup);
+				while(!delaySendBuffer.isEmpty()) {
+					Message tmp = delaySendBuffer.poll();
+					sendBuffer.add(tmp);
+				}
+			}
+			else if(action.equals("delay")) {
+				if(GParameters.isTest) {
+					System.out.println("Delay the message.");
+				}
+				delaySendBuffer.add(msg);
+			}
+			// other action, just send the message
+			else {
+				if(GParameters.isTest) {
+					System.out.println("Just send this the message.");
+				}
+				sendBuffer.add(msg);
+				while(!delaySendBuffer.isEmpty()) {
+					Message tmp = delaySendBuffer.poll();
+					sendBuffer.add(tmp);
+				}
+			}
+			sendMsg(sendBuffer);
+		}
+		// Not find matched rule
+		else {
+
+			sendBuffer.add(msg);
+			while(!delaySendBuffer.isEmpty()) {
+				Message tmp = delaySendBuffer.poll();
+				sendBuffer.add(tmp);
+			}
+			sendMsg(sendBuffer);
+		}
+	}
+
+	public void sendMsg(ConcurrentLinkedQueue<Message> sendBuffer) {
+
+		if(sendBuffer.isEmpty())
+			return;
+		ObjectOutputStream oos = null;
+		Socket curSkt = null;
+		String msgDest = null;
+		while(!sendBuffer.isEmpty()) {
+			Message msg = sendBuffer.poll();
+			msgDest = msg.getDest();
+			oos = this.getConnections().get(msgDest);
+			// if not cached, set up the socket and cache it
+			try {
+				if(oos == null) {
+					Host msgHost = hosts.get(msgDest);
+					String msgIp = msgHost.getIp();
+					int msgPort = msgHost.getPort();
+					curSkt = new Socket(msgIp, msgPort);
+					oos = new ObjectOutputStream(curSkt.getOutputStream());
+					this.getConnections().put(msgDest, oos);
+				}
+				// Send message
+				oos.writeObject(msg);
+				oos.flush();
+			} catch (Exception e) {
+				System.out.println("Oops!");
+			}
+		}
+
+	}
+
+	public Message receive() {
+
+		Message msg = null;
+		if(!receiveBuffer.isEmpty()) 
+			msg = receiveBuffer.poll();
+		return msg; 
+	}
+
+	public Rule checkRule(boolean ruleKind, Message msg) {
+
+		ArrayList<Rule> curRule = null;
+		// send rules
+		if(ruleKind == true)
+			curRule = this.sendRules;
+		else
+			curRule = this.receiveRules;
+		for(Rule rule: curRule) {
+			if(rule.getSrc() != null && !(rule.getSrc().equals(msg.getSrc()))){
+				if(GParameters.isTest) {
+					System.out.println("Src is not match.");
+				}
+				continue;
+			}
+			if(rule.getDest() != null && !(rule.getDest().equals(msg.getDest()))){
+				if(GParameters.isTest) {
+					System.out.println("Dest is not match.");
+				}
+				continue;
+			}
+			if(rule.getKind() != null && !(rule.getKind().equals(msg.getKind()))){
+				if(GParameters.isTest) {
+					System.out.println("Kind is not match.");
+				}
+				continue;
+			}
+			if(rule.getDupSetFlag() && rule.getDup() != msg.getDup()){
+				if(GParameters.isTest) {
+					System.out.println("Dup is not match.");
+				}
+				continue;
+			}
+			if(rule.getSeqNum() != -1 && rule.getSeqNum() != msg.getSeqNum()){
+				if(GParameters.isTest) {
+					System.out.println("SeqNum is not match.");
+				}
+				continue;
+			}
+			return rule;
+		}
+		return null;
+	}
+}
