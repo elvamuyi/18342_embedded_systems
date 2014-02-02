@@ -1,4 +1,4 @@
-package Lab1_copy;
+package Lab1;
 
 import com.dropbox.core.DbxAppInfo;
 import com.dropbox.core.DbxClient;
@@ -18,6 +18,7 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import static java.sql.Types.NULL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -78,7 +79,7 @@ public class MessagePasser
         //t.start();
         this.clock_type = clock_type;
         if (clock_type.equals("Logical")) clock = new LogicalClock();
-        if (clock_type.equals("Vector")) clock = new VectorClock(number_of_names, this.our_process_number);
+        if (clock_type.equals("Vector")) clock = new VectorClock(number_of_names, our_process_number);
     }
     void send(TimeStampedMessage message)
     {
@@ -91,7 +92,7 @@ public class MessagePasser
                     kind = message.kind;
             message.set_seqNum(ISN++);
             int seqNum=message.seqNum;
-            message.set_duplicate(false);         
+            message.set_duplicate(false);
             String action = "send";
             Socket s;
             //System.out.println("About to create socket!");
@@ -262,6 +263,7 @@ public class MessagePasser
         
         return message;
     }
+    
 }
   
 class Socket_Listener implements Runnable
@@ -355,6 +357,8 @@ class OurRunnable implements Runnable
                     else if(action.equals("duplicate"))
                     {
                         //System.out.println("Received message duplicated!");
+                        System.out.println("Clock now:" + mp1.clock.getTimeStamp().get_timestamp());
+                        
                         TimeStampedMessage duplicate_message = 
                                 new TimeStampedMessage(message.destination,
                                         message.kind,message.data);
@@ -372,15 +376,15 @@ class OurRunnable implements Runnable
                             {
                                 mp1.clock.update(message.get_timestamp(), mp1.our_process_number);
                             }
+                            System.out.println("Clock now:" + mp1.clock.getTimeStamp().get_timestamp());
                             mp1.received_queue.addLast(message);
-                            if(mp1.clock_type.equals("Logical"))
-                            {
-                                mp1.clock.update(duplicate_message.get_timestamp());
-                            }
-                            else if(mp1.clock_type.equals("Vector"))
-                            {
-                                mp1.clock.update(duplicate_message.get_timestamp(), mp1.our_process_number);
-                            }
+                            duplicate_message.set_timestamp(message.get_timestamp());
+                    
+                            if (mp1.clock_type.equals("Logical"))
+                              mp1.clock.tick();
+                            else if (mp1.clock_type.equals("Vector"))
+                              mp1.clock.tick(mp1.our_process_number);
+                            System.out.println("Clock now:" + mp1.clock.getTimeStamp().get_timestamp());
                             mp1.received_queue.addLast(duplicate_message);
                             while(!mp1.delayed_received_queue.isEmpty())
                             {
@@ -435,7 +439,7 @@ class OurRunnable implements Runnable
                 }
                 catch(Exception e)
                 {
-                    System.out.println("The receiver has terminated!");
+                    System.out.println("The receiver has terminated!" + e);
                 }
             }
         } 
